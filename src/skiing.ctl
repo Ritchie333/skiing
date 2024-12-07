@@ -24,6 +24,9 @@ b $5d80 Sprite 6
 b $5da0 Sprite 7
 b $5dc0 Sprite 8
 b $5de0
+b $5E20
+b $5E64
+b $5E6A
 g $5E70 Time to remain on the title screen
 g $5e71
 g $5e78 Address of next attribute to draw
@@ -67,6 +70,7 @@ g $5EBD Number of times Horace has hit a tree
 g $5ebe
 g $5ebf Cash / 10
 g $5ec0
+g $5ec1
 g $5f00 Sprite screen address
 W $5f00
 g $5f02 Sprite address
@@ -75,6 +79,10 @@ g $5f04 Sprite attribute ID
 g $5f05 Number of rows to draw
 g $5f06 Number of columns to draw
 g $5f07
+g $5f14 Traffic data
+D $5f14 Each entry is #N$D bytes long
+B $5f14,$5b,$D
+b $5f6f
 c $5F70 Startup code
 u $5f86
 c $6000 Main entry point
@@ -101,12 +109,49 @@ b $61D0 Sprite D
 b $6200 Sprite E
 b $6230 Sprite F
 b $6260 Sprite 10
-b $6290 Background graphics
+b $6290 Car L
+b $62F0 Car R
+b $6350 Truck L
+b $6431 Truck R
+b $6501
+b $6509
+b $65D2 Ski hut
+b $6662
+b $6676 Traffic definitions
+W $6676
+b $6682 Traffic definition 0
+W $6686,6
+B $668C,1
+B $668D,1
+B $668E,1
+b $668f Traffic definition 1
+W $6693,6
+B $6699,1
+B $669A,1
+B $669B,1
+b $669c Traffic definition 2
+W $66A0,6
+B $66A6,1
+B $66A7,1
+B $66A8,1
+b $66a9 Traffic definition 3
+W $66AD,6
+B $66B3,1
+B $66B4,1
+B $66B5,1
+b $66b6 Traffic definition 4
+W $66BA,6
+B $66C0,1
+B $66C1,1
+B $66C2,1
+b $66c3 Traffic definition 5
+W $66C7,6
+B $66CD,1
+B $66CE,1
+B $66CF,1
+b $66d0
 b $6974
-t $69cb
-b $69d1
-t $69db FINISH
-b $69e3
+t $69c8 FINISH
 w $6a27 String table
 t $6a35 String 1 : SKI HIRE $10
 t $6a56 String 2 : AMBULANCE FEE $10
