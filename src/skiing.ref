@@ -1,0 +1,6 @@
+[Game]
+Game=Horace Goes Skiing
+Copyright(c) 1982 William Tang / Beam Software (code), 2024 Ritchie Swann (disassembly)
+
+[Config]
+HtmlWriterClass=skiing.SkiingHtmlWriter
