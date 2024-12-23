@@ -29,10 +29,27 @@ b $5E64
 b $5E6A
 g $5E70 Time to remain on the title screen
 g $5e71
+g $5e72
+g $5e73
+g $5e74
+g $5e75
+g $5e76
+g $5e77
 g $5e78 Address of next attribute to draw
 W $5e78
 g $5e7a Next attribute to draw
-b $5e7b
+g $5e7b
+g $5e7c
+g $5e7d
+g $5e7e
+g $5e7f
+g $5e80
+g $5e81
+g $5e82
+g $5e83
+g $5e84
+W $5e84
+g $5e86
 g $5e87 Random number seed
 g $5e88 Horace's screen address
 g $5e89
@@ -43,9 +60,19 @@ g $5e8d Horace's state
 D $5e8d Set to 1 if Horace was run over
 D $5e8d Set to 3 if Horace hit a tree
 g $5e8e
+g $5e8f
+g $5e90
+g $5e91
+g $5e92
+g $5e93
 g $5e94
 g $5e95
 g $5e96
+g $5E97 Pause time
+W $5E97
+g $5E99
+W $5e99
+g $5e9b
 g $5e9c
 g $5e9d
 g $5e9e Counter for border fill routine
@@ -58,6 +85,19 @@ g $5EA4
 g $5EA5
 W $5EA5
 g $5ea7
+g $5ea8
+g $5EA9
+g $5EAA
+g $5EAB
+g $5EAC
+g $5ead
+g $5EAE
+g $5EAF
+g $5EB0
+g $5eb1
+g $5EB2
+g $5eb3
+g $5EB4
 g $5EB5 ID of the string to print
 g $5EB6
 g $5EB7
@@ -71,6 +111,15 @@ g $5ebe
 g $5ebf Cash / 10
 g $5ec0
 g $5ec1
+g $5ec2
+g $5ec3
+g $5ec4
+g $5ec5
+g $5ec6
+g $5ec7
+g $5efd
+g $5efe
+g $5eff
 g $5f00 Sprite screen address
 W $5f00
 g $5f02 Sprite address
@@ -85,6 +134,8 @@ B $5f14,$5b,$D
 b $5f6f
 c $5F70 Startup code
 u $5f86
+g $5fe6 Data for ambulance at the bottom of the screen
+B $5fe6,$1a,$D
 c $6000 Main entry point
 c $601c Startup routine
 c $6053 Traffic screen
@@ -115,6 +166,7 @@ b $6350 Truck L
 b $6431 Truck R
 b $6501
 b $6509
+b $6512
 b $65D2 Ski hut
 b $6662
 b $6676 Traffic definitions
@@ -150,6 +202,29 @@ B $66CD,1
 B $66CE,1
 B $66CF,1
 b $66d0
+W $66d4,6
+B $66da,1
+B $66db,1
+B $66dc,1
+b $66dd
+b $66e3
+W $66e7,6
+B $66ed,1
+B $66ee,1
+B $66ef,1
+b $66f0
+b $66f6
+w $6702
+b $670c
+b $6754
+b $679C
+b $67E4
+b $682C
+b $6874
+b $687E
+b $6881
+b $6884
+b $68FC
 b $6974
 t $69c8 FINISH
 w $6a27 String table
