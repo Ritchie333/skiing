@@ -1,7 +1,7 @@
 b $4000 Loading screen
 B $4000,6912,8
-b $5B00 Data block at 5B00
-B $5B00,39,8*4,7
+b $5B00 Flag
+b $5B18
 b $5B27 Title text top line
 B $5B27,80,5
 b $5B77 Title text middle line
@@ -64,7 +64,7 @@ b $5E6A Car R data
 B $5E6A,6,6
 g $5E70 Time to remain on the title screen
 B $5E70,1,1
-g $5E71 Game status buffer entry at 5E71
+g $5E71 Pause flag
 B $5E71,1,1
 g $5E72 Game status buffer entry at 5E72
 B $5E72,1,1
@@ -74,9 +74,9 @@ g $5E74 Width of current vehicle
 B $5E74,1,1
 g $5E75 Height of current vehicle
 B $5E75,1,1
-g $5E76 Game status buffer entry at 5E76
+g $5E76 Movement bit mask ?
 B $5E76,1,1
-g $5E77 Game status buffer entry at 5E77
+g $5E77 Movement bit mask ?
 B $5E77,1,1
 g $5E78 Address of next attribute to draw
 W $5E78,2,2
@@ -93,7 +93,7 @@ B $5E7E,1,1
 g $5E7F Address of next sprite to draw
 W $5E7F,2,2
 g $5E81 Next screen address to use for vehicle
-B $5E81,1,1
+W $5E81,2,2
 g $5E83 Direction of current vehicle
 D $5E83 0 = right, 1 = left
 B $5E83,1,1
@@ -104,14 +104,13 @@ B $5E86,1,1
 g $5E87 Random number seed
 B $5E87,1,1
 g $5E88 Game status buffer entry at 5E88
-W $5E88,2,2
+B $5E88,1,1
 g $5E89 Horace's screen address 1
 W $5E89,2,2
 g $5E8B Horace's screen address 2
 W $5E8B,2,2
 g $5E8D Horace's state
-D $5E8D Set to 1 if Horace was run over
-D $5E8D Set to 3 if Horace hit a tree
+D $5E8D #TABLE { 1 - Horace was run over } { 2 - Horace hit a slope } { 3 - Horace hit a tree } TABLE#
 B $5E8D,1,1
 g $5E8E Set to 1 if Horace hit a vehicle
 B $5E8E,1,1
@@ -165,10 +164,8 @@ g $5EAA Game status buffer entry at 5EAA
 B $5EAA,1,1
 g $5EAB Game status buffer entry at 5EAB
 B $5EAB,1,1
-g $5EAC Game status buffer entry at 5EAC
-B $5EAC,1,1
-g $5EAD Game status buffer entry at 5EAD
-B $5EAD,1,1
+g $5EAC Length travelled down the ski slope
+W $5EAC,2,2
 g $5EAE Game status buffer entry at 5EAE
 B $5EAE,1,1
 g $5EAF Game status buffer entry at 5EAF
@@ -181,7 +178,7 @@ g $5EB2 Game status buffer entry at 5EB2
 B $5EB2,1,1
 g $5EB3 Game status buffer entry at 5EB3
 B $5EB3,1,1
-g $5EB4 Game status buffer entry at 5EB4
+g $5EB4 Set to 1 when the finish gate is in view
 B $5EB4,1,1
 g $5EB5 ID of the string to print
 B $5EB5,1,1
@@ -249,9 +246,11 @@ C $5F70,11 Move #N$5cd0 - #N$5b00 for #N$100 bytes
 C $5F7B,8 Move #N$5dd0 - #N$5cd0 for #N$1a0 bytes
 C $5F83,3 Start the game
 u $5F86 Unused
-B $5F86,96,8
-g $5FE6 Data for ambulance at the bottom of the screen
-B $5FE6,26,13
+B $5F86,97,8*12,1
+g $5FE7 Data for ambulance at the bottom of the screen
+B $5FE7,13,8,5
+u $5FF4 Unused
+B $5FF4,12,8,4
 c $6000 Main entry point
 D $6000 This is called after the first CODE block is loaded, and loads the second one As it overwrites the memory used for BASIC, the standard routines cannot be used
 C $6000,4 Point #REGix to the ROM, so the block is ignored
@@ -280,8 +279,8 @@ C $6038,4 Is the game over?
 C $603C,2 If so, jump back to the intro screen
 C $603E,4 Has Horace run out of money?
 C $6042,2 If so, jump back to the intro screen
-C $6044,4 Has Horace still got working skis?
-C $6048,2 If so, jump back to run the traffic screen
+C $6044,4 Is the game in demo mode?
+C $6048,2 If not, jump back to run the traffic screen
 C $604A,4 Otherwise signal out of money
 C $604E,3 Run the skiing screen (but with no money)
 C $6051,2 Jump back to the intro screen
@@ -293,6 +292,11 @@ C $6059,3 Generate some traffic
 C $605C,3 Update the traffic
 C $605F,3 Draw the ambulance
 C $6062,3 Update Horace
+C $6068,4 Is the game in demo mode? (#R$5EB8)
+C $606C,2 If so, skip over updating the score
+C $606E,3 Update the score
+C $6071,3 Print the score
+C $6074,3 Sound the ambulance if it's on screen
 C $6077,3 Print a message if necessary
 C $607A,4 Is the game over?
 C $607E,1 Return if so
@@ -508,15 +512,47 @@ B $682C,72,8
 b $6874 Horace skiing default data
 B $6874,3,3
 W $6877,4,2
-B $689B,3,3
+B $687B,3,3
 b $687E Data block at 687E
 B $687E,3,3
 b $6881 Data block at 6881
 B $6881,3,3
-b $6884 Data block at 6884
+b $6884 Tree
+D $6884 #CALL:print_udg(#PC,3,5,$3C,tree)
 B $6884,120,8
-b $68FC Data block at 68FC
-B $68FC,120,8
+b $68FC Slope
+D $68FC #CALL:print_udg(#PC,3,2,$38,slope)
+b $692C
+b $6932 Skiing object definitions
+W $6932,2,2 Object 1 - tree
+W $6934,2,2
+W $6936,2,2 Object 2
+W $6938,2,2
+W $693A,2,2 Object 3
+W $693C,2,2
+b $693E Skiing object 1 - tree
+B $693E,3,3
+W $6941,2,2 Sprite address
+W $6943,2,2
+B $6945,1,1 Height
+B $6946,1,1 Width
+b $6947 Data block at 6947
+B $6947,9,8,1
+b $6950 Data block at 6950
+B $6950,3,3
+W $6953,2,2 Sprite address
+W $6955,2,2
+B $6957,1,1 Height
+B $6958,1,1 Width
+b $6959 Data block at 6959
+B $6959,9,8,1
+b $6962 Data block at 6962
+B $6962,3,3
+W $6965,2,2 Sprite address
+B $6969,1,1 Height
+B $696A,1,1 Width
+b $696B Data block at 696B
+B $696B,9,8,1
 b $6974 Horace crashed into a tree
 D $6974 #CALL:print_udg(#PC,3,3,$3a,horacex)
 B $6974,84,8*10,4
@@ -678,10 +714,17 @@ C $6D65,2 Otherwise, replace '0' with a space
 C $6D67,1 Move to the next digit
 C $6D68,2 Repeat until all digits looked at
 C $6D6A,1 All done, so return
-c $6D6B Routine at 6D6B
+c $6D6B Print the score
 D $6D6B Used by the routines at #R$6053 and #R$78B4.
 C $6D78,3 Update the hi score
 C $6D82,5 Convert this to ASCII and store it in the 'tens' digit
+C $6D87,3 Point #REGhl at the end of the cash total (#R$5CD2)
+C $6D8A,3 Convert this to a string
+C $6D8D,3 Point #REGhl at ??
+C $6D90,3 Convert this to a string
+C $6D93,11 Add trailing spaces to the figure to print
+C $6D9E,5 Add the TAB character
+C $6DA3,10 Print the string and return
 c $6DAD Generate a random number
 D $6DAD Used by the routines at #R$6E4A, #R$7164, #R$71E6, #R$7C74 and #R$7D5F.
 R $6DAD A On exit, holds a random number
@@ -709,10 +752,15 @@ C $6DCF,1 Otherwise the current score must equal the hi score, so exit
 N $6DD0 The current score is greater than the hi score, so update it
 C $6DD0,11 Copy the current score into the high score
 C $6DDB,4 Print the high score and return
-c $6DDF Routine at 6DDF
+c $6DDF Sound the ambulance if it's on screen
 D $6DDF Used by the routine at #R$6053.
 C $6DDF,6 Was 'ENTER' pressed?
 C $6DE5,2 Jump forward if so
+C $6DE7,9 Toggle the pause flag
+C $6DF0,4 Is the pause flag zero?
+C $6DF4,2 If so, jump forward to pause.
+C $6DF6,4 Is an ambulance on screen?
+C $6DFA,2 If not, simply pause. Otherwise move forward to #R$6DFC to play a sound effect
 c $6DFC Play a sound effect
 D $6DFC Used by the routine at #R$783B.
 C $6DFC,9 Toggle effect flag between 0 and 1
@@ -733,11 +781,15 @@ C $6E1F,1 Decrement the timer
 C $6E20,2 Is it zero?
 C $6E22,2 Jump back if not
 C $6E24,1 Otherwise return
-c $6E25 Plsy a "slope" sound effect
+c $6E25 Play a "slope" sound effect
 D $6E25 Used by the routines at #R$7532, #R$7D5F and #R$7F04.
 c $6E4A Get keyboard input
 D $6E4A Used by the routines at #R$75B5 and #R$7E25.
 R $6E4A B On exit, holds 0 = up, 1 = right, 2 = down, 3 = left
+C $6E4D,3 Point #REGde to the demo mode flag (#R$5EB8)
+C $6E50,2 Is the game in demo mode?
+C $6E52,2 If so, skip over the control input
+N $6E54 The game is not in demo mode, so read the direction controls
 C $6EAF,6 Was 'S' pressed?
 C $6EB5,2 Jump forward if not
 N $6EB7 'S' was pressed, so pause the game
@@ -804,6 +856,8 @@ C $6F3D,2 Set direction to DOWN
 C $6F3F,1 Return
 c $6F40 Run the intro screen
 D $6F40 Used by the routine at #R$601C.
+C $6F40,1 Set #REGa to zero to clear some flags
+C $6F41,3 Clear demo mode flag (#R$5EB8)
 C $6F4C,5 Clear #N$18 lines of the display.
 C $6F51,5 Set the timer to #N$8C ticks
 C $6F56,11 Print the top line of text
@@ -842,6 +896,7 @@ C $7054,3 Set #REGde for the length of one line
 C $7097,5 Pause
 c $70AB Initialize traffic screen
 D $70AB Used by the routine at #R$6053.
+C $70C2,4 Is the game in demo mode?
 C $70C8,6 Set to pause for #N$B00 ticks
 C $70CE,3 Initialize display
 C $70D1,3 Draw background
@@ -1032,6 +1087,7 @@ C $7383,4 Loop while there are more vehicles to look at
 C $7387,2 Restore the main registers and return.
 c $7389 Routine at 7389
 D $7389 Used by the routine at #R$7241.
+R $7389 A
 c $7402 Move a vehicle
 D $7402 Used by the routines at #R$7241 and #R$783B.
 C $7402,4 Put the next screen address in #REGde
@@ -1043,9 +1099,30 @@ C $7412,4 Put the movement buffer in #REGhl
 C $7416,4 Put the sprite buffer in #REGbc
 C $741A,4 Store this
 C $741E,3 Get the next screen address to use (#R$5E81)
-c $74A2 Routine at 74A2
+C $7421,3 Update movement flags
+c $74A2 Update movement flags
 D $74A2 Used by the routine at #R$7402.
-c $74E3 Update Horace
+R $74A2 HL Current screen address
+R $74A2 A Current direction
+C $74A2,1 Store #REGhl
+C $74A3,1 Remember #REGa
+C $74A4,2 Set #REGh with all bits in a column index
+C $74A6,3 Merge the row and column bits together in #REGl
+C $74A9,1 Get the column index
+C $74AA,2 Subtract the bitmask and add 1
+C $74AC,2 Merge this with the row bits and store in #REGl.
+C $74AE,1 Restore #REGa
+C $74AF,1 Is the direction right?
+C $74B0,3 Get the vehicle width
+C $74B3,2 Jump forward if direction is left
+N $74B5 Handle right facing
+N $74BF Handle left facing
+N $74D0 Calculate the attribute address
+C $74D0,2 Restore the screen address
+C $74D2,12 Convert this into an attribute address
+C $74DE,3 Store it (#R$5E78)
+C $74E1,2 Restore #REGhl and return
+c $74E3 Update Horace on the traffic screen
 D $74E3 Used by the routine at #R$6053.
 C $74E3,4 Has Horace hit a vehicle?
 C $74E7,2 Jump forward if so
@@ -1070,7 +1147,7 @@ C $7582,11 Copy the default data into the graphics buffer entries
 c $75B5 Update Horace based on keyboard input
 D $75B5 Used by the routine at #R$74E3.
 C $75B5,3 Get keyboard input
-C $75B8,3 Point #REGhl at the current direction
+C $75B8,3 Point #REGhl at the current direction (#R$5EFF)
 C $75BB,1 Put the planned input state in #REGa
 C $75BC,2 Is it 4 (no input?)
 C $75BE,2 Jump forward if so
@@ -1100,6 +1177,7 @@ C $7774,1 Move forward a row
 C $7775,2 Loop until all rows checked
 c $77AC Routine at 77AC
 D $77AC Used by the routine at #R$6053.
+C $77AC,3 (#R$5EFD)
 c $77ED Calculate and store Horace's next sprite address
 D $77ED Used by the routines at #R$75B5 and #R$77AC.
 C $77ED,9 Flip the frame counter between 0 and 1
@@ -1127,10 +1205,32 @@ C $7834,3 Redraw the ski hut
 c $783B Run the ambulance across the screen after Horace has been run over
 D $783B Used by the routine at #R$781B.
 C $783B,13 Fill the bottom three lines with white on white
+C $7848,11 Copy the right facing ambulance definition (#R$66E3) to the working buffer (#R$5FE7)
+C $7853,6 Set the initial screen address to #N$50DB
+C $7859,6 Set the sprite data to #R$66F6
+C $785F,5 Set the height to 2
+C $7864,5 Set the width to 6
+C $7869,6 Set the pointer to the movement data
+N $786F Update the ambulance
+C $7894,3 Move the vehicle
+C $7897,3 Sound the ambulance siren
+C $789A,6 Pause
+C $78A0,2 Loop back to update the ambulance
 c $78B4 Skiing screen
 D $78B4 Used by the routine at #R$601C.
 C $78B4,3 Fill the screen with colours
+C $78B7,3 Initialize the screen
+C $78BA,3 Set up the initial state
+C $78D1,3 Update Horace skiing
 C $78D6,6 Pause twice
+C $78DC,4 Is the game in demo mode?
+C $78E0,2 If so, don't print the score
+C $78E2,3 Update the score
+C $78E5,3 Print the score
+C $78E8,4 Is the game over?
+C $78EC,1 If so, return
+C $78ED,4 Is the finish gate in view?
+C $78F1,3 If so, draw it
 C $78F4,3 Print a message (if any)
 c $7904 Routine at 7904
 D $7904 Used by the routine at #R$78B4.
@@ -1138,17 +1238,31 @@ c $792A Initialize skiing screen
 D $792A Used by the routines at #R$78B4 and #R$7C74.
 C $7940,13 Fill all the lines below the top one with white on white.
 C $794D,1 Return
-c $794E Routine at 794E
+c $794E Initialize skiing screen
 D $794E Used by the routine at #R$78B4.
+C $794E,6 Initialize the distance travelled (#R$5EAC)
 C $7954,4 Has Horace run out of money?
 C $7958,2 Jump forward if not
 C $795D,5 Set message ID to 6 SORRY - NO MONEY NO SKI!
+C $7962,1 Set #REGa to zero for some flags
+C $7963,3 Set the finish gate not in view (#R$5EB4)
 c $79B0 Routine at 79B0
 D $79B0 Used by the routine at #R$78B4.
+C $79CC,3 Set #REGhl to the distance travelled (#R$5EAC)
+C $79CF,7 Return if it is greater than the maximum
 c $79DF Routine at 79DF
 D $79DF Used by the routine at #R$79B0.
-c $7A07 Routine at 7A07
+C $79E0,7 Increase the distance travelled
+C $7A01,4 Increase the distance travelled
+c $7A07 Draw a graphic on the skiing screen
 D $7A07 Used by the routine at #R$79DF.
+R $7A07 B Graphic ID
+R $7A07 DE Pointer to object store
+C $7A07,1 Put the graphic ID in #REGa.
+C $7A08,2 Quadruple it to get a double word offset
+C $7A0A,3 Put this in #REGde
+C $7A0D,4 Add the base address of the graphic table (#R$6932)
+C $7A1C,7 Increase the distance travelled
 c $7ABA Routine at 7ABA
 D $7ABA Used by the routine at #R$78B4.
 c $7BB9 Routine at 7BB9
@@ -1214,13 +1328,29 @@ R $7CFA HL Horace's current screen position
 C $7CFA,3 Get Horace's state
 C $7CFD,1 Is it 0 (normal)?
 C $7CFE,1 Return if not
-c $7D5F Routine at 7D5F
+c $7D5F Update Horace while skiing
 D $7D5F Used by the routine at #R$7C54.
+C $7D5F,3 Get keyboard input
+C $7D62,3 Get the current state (#R$5E8D)
+C $7D65,2 Has Horace hit a slope?
+C $7D67,2 Jump forward if not
+N $7D69 Horace hit a slope, so handle that
+C $7D69,4 Reset the state flag
+C $7D6D,3 Play a sound effect
+C $7D70,3 Get the current direction (#R$5EFF)
+C $7D73,4 Jump forward if it is up or right
 C $7D79,3 Generate a random number
+C $7D85,3 Change direction
+N $7D88 Handle other movement
+C $7D8E,3 Get the current direction (#R$5EFF)
+C $7DDD,3 Get the current direction (#R$5EFF)
 C $7E21,3 Draw the sprite
 c $7E25 Update Horace skiing
 D $7E25 Used by the routine at #R$7D5F.
 C $7E25,3 Get keyboard input
+C $7E28,4 Get the current direction (#R$5EFF)
+C $7E2C,2 Is bit 0 set? (ie: left or right)
+C $7E2E,2 Jump forward if so
 N $7E4E This entry point is used by the routine at #R$7D5F, where the direction is already set.
 C $7E4E,3 Set the direction to #REGa
 N $7E51 Having determined the direction, draw Horace.
@@ -1232,12 +1362,14 @@ C $7E5C,3 Put the address found in #REGde
 C $7E5F,4 Store this as the sprite address to draw on screen
 c $7E64 Routine at 7E64
 D $7E64 Used by the routine at #R$7D5F.
-c $7E8D Routine at 7E8D
+c $7E8D Draw the finish gate
 D $7E8D Used by the routine at #R$78B4.
-C $7EAE,3 Point #REGhl at the finish banner (#R$69C8)
+C $7EAE,3 Point #REGhl at the finish gate (#R$69C8)
 C $7EB6,3 Point #REGhl at the finish banner (#R$69C8)
 C $7ECA,3 Move back 5 characters
 C $7ED2,3 Print the string
+C $7EE3,1 Set #REGa to 0 for some flags
+C $7EE4,3 Reset the "gate visible" flag
 C $7EF1,4 Set current message ID to 0 (none )
 c $7EF6 Routine at 7EF6
 D $7EF6 Used by the routine at #R$7E8D.

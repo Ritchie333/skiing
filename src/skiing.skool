@@ -864,11 +864,15 @@ b$4000 DEFB $00,$00,$00,$00,$00,$00,$01,$FF
  $5AF0 DEFB $36,$30,$30,$30,$30,$30,$30,$30
  $5AF8 DEFB $30,$30,$30,$30,$30,$30,$30,$30
 
-; Data block at 5B00
+; Flag
+;
+; #CALL:print_udg(#PC,1,3,$39,flag)
 b$5B00 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $5B08 DEFB $40,$40,$40,$40,$40,$40,$40,$40
  $5B10 DEFB $60,$78,$7F,$7E,$7C,$7C,$70,$40
- $5B18 DEFB $3F,$3F,$3F,$3C,$3C,$3C,$3C,$3C
+
+; Data block at 5B18
+b$5B18 DEFB $3F,$3F,$3F,$3C,$3C,$3C,$3C,$3C
  $5B20 DEFB $3C,$3C,$3C,$3C,$3C,$3C,$3C
 
 ; Title text top line
@@ -1066,14 +1070,14 @@ b$5E60 DEFB $00,$07,$07,$00
 ; Car L data
 b$5E64 DEFB $00,$06,$06,$06
  $5E68 DEFB $06,$00
- 
+
 ; Car R data
 b$5E6A DEFB $00,$02,$02,$02,$02,$00
 
 ; Time to remain on the title screen
 g$5E70 DEFB $07
 
-; Game status buffer entry at 5E71
+; Pause flag
 g$5E71 DEFB $1F
 
 ; Game status buffer entry at 5E72
@@ -1088,10 +1092,10 @@ g$5E74 DEFB $FF
 ; Height of current vehicle
 g$5E75 DEFB $8F
 
-; Game status buffer entry at 5E76
+; Movement bit mask ?
 g$5E76 DEFB $F1
 
-; Game status buffer entry at 5E77
+; Movement bit mask ?
 g$5E77 DEFB $7E
 
 ; Address of next attribute to draw
@@ -1116,7 +1120,7 @@ g$5E7E DEFB $E7
 g$5E7F DEFW $9F1E
 
 ; Next screen address to use for vehicle
-g$5E81 DEFB $070F
+g$5E81 DEFW $070F
 
 ; Direction of current vehicle
 ;
@@ -1133,7 +1137,7 @@ g$5E86 DEFB $0C
 g$5E87 DEFB $07
 
 ; Game status buffer entry at 5E88
-g$5E88 DEFW $F8
+g$5E88 DEFB $F8
 
 ; Horace's screen address 1
 g$5E89 DEFW $3070
@@ -1143,9 +1147,11 @@ g$5E8B DEFW $A8B8
 
 ; Horace's state
 ;
-; Set to 1 if Horace was run over
-; .
-; Set to 3 if Horace hit a tree
+; #TABLE
+; { 1 - Horace was run over }
+; { 2 - Horace hit a slope }
+; { 3 - Horace hit a tree }
+; TABLE#
 g$5E8D DEFB $3C
 
 ; Set to 1 if Horace hit a vehicle
@@ -1226,11 +1232,8 @@ g$5EAA DEFB $1C
 ; Game status buffer entry at 5EAB
 g$5EAB DEFB $24
 
-; Game status buffer entry at 5EAC
-g$5EAC DEFB $7C
-
-; Game status buffer entry at 5EAD
-g$5EAD DEFB $00
+; Length travelled down the ski slope
+g$5EAC DEFW $007C
 
 ; Game status buffer entry at 5EAE
 g$5EAE DEFB $00
@@ -1250,7 +1253,7 @@ g$5EB2 DEFB $7F
 ; Game status buffer entry at 5EB3
 g$5EB3 DEFB $63
 
-; Game status buffer entry at 5EB4
+; Set to 1 when the finish gate is in view
 g$5EB4 DEFB $C3
 
 ; ID of the string to print
@@ -1315,13 +1318,13 @@ g$5EC7 DEFB $FC,$F0,$C4,$FC,$CC,$78,$40,$00
  $5EE7 DEFB $00,$4E,$7D,$6C,$CE,$9A,$86,$CC
  $5EEF DEFB $78,$3E,$E2,$FE,$FA,$EB,$23,$36
  $5EF7 DEFB $1C,$00,$00,$00,$00,$00
- 
+
 ; Game status buffer entry at 5EFD
 g$5EFD DEFB $00
 
 ; Horace's tick count?
 g$5EFE DEFB $00
- 
+
 ; Horace's current direction
 ;
 ; 0 = up, 1 = right, 2 = down, 3 = left
@@ -1372,14 +1375,14 @@ b$5F6F DEFB $00
 ; Startup code
 ;
 ; Used by the routine at #R$6000.
-c$5F70 LD DE,$5B00   ; { Move #N$5cd0 - #N$5b00 for #N$100 bytes
+c$5F70 LD DE,$5B00   ; {Move #N$5cd0 - #N$5b00 for #N$100 bytes
  $5F73 LD HL,$5CD0   ;
  $5F76 LD BC,$0100   ;
  $5F79 LDIR          ; }
- $5F7B LD DE,$5CD0   ; { Move #N$5dd0 - #N$5cd0 for #N$1a0 bytes
+ $5F7B LD DE,$5CD0   ; {Move #N$5dd0 - #N$5cd0 for #N$1a0 bytes
  $5F7E LD BC,$01A0   ;
  $5F81 LDIR          ; }
-*$5F83 JP $601C      ; Start the game
+*$5F83 JP $5F83      ; Start the game
 
 ; Unused
 u$5F86 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -1394,15 +1397,21 @@ u$5F86 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $5FCE DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $5FD6 DEFB $0F,$C9,$0F,$C9,$DB,$02,$4D,$00
  $5FDE DEFB $70,$5E,$00,$00,$70,$5F,$81,$00
+ $5FE6 DEFB $83
 
 ; Data for ambulance at the bottom of the screen
-g$5FE6 DEFB $83,$5F,$2B,$2D,$65,$33,$FF,$FF,$ED,$10,$0D,$00,$53
- $5FF3 DEFB $00,$2F,$20,$ED,$1F,$DB,$1F,$76,$1B,$03,$13,$00,$3E
+g$5FE7 DEFB $5F,$2B,$2D,$65,$33,$FF,$FF,$ED
+ $5FEF DEFB $10,$0D,$00,$53,$00
+
+; Unused
+u$5FF4 DEFB $2F,$20,$ED,$1F,$DB,$1F,$76,$1B
+ $5FFC DEFB $03,$13,$00,$3E
 
 ; Main entry point
 ;
 ; This is called after the first CODE block is loaded, and loads the second one
-; As it overwrites the memory used for BASIC, the standard routines cannot be used
+; As it overwrites the memory used for BASIC, the standard routines cannot be
+; used
 c$6000 LD IX,$0000   ; Point #REGix to the ROM, so the block is ignored
  $6004 LD DE,$0010   ; Set the length to #N$10
  $6007 XOR A         ; Set header byte to 0
@@ -1420,26 +1429,26 @@ c$6000 LD IX,$0000   ; Point #REGix to the ROM, so the block is ignored
 ; This routine is called once the entire game is loaded and moved into place
 c$601C DI            ; Disable interrupts
  $601D LD SP,$8000   ; Put the stack at the top of 16K RAM
- $6020 LD A,$02      ; { Select the screen for output.
+ $6020 LD A,$02      ; {Select the screen for output.
  $6022 CALL $1601    ; }
- $6025 XOR A         ; { Set DF-SZ to 0, to disable lower screen output.
+ $6025 XOR A         ; {Set DF-SZ to 0, to disable lower screen output.
  $6026 LD ($5C6B),A  ; }
 *$6029 CALL $6F40    ; Show the intro screen
 *$602C CALL $6053    ; Run the traffic screen
- $602F LD A,($5EB9)  ; { Is the game over?
+ $602F LD A,($5EB9)  ; {Is the game over?
  $6032 AND A         ; }
  $6033 JR NZ,$6029   ; If so, jump back to the intro screen
  $6035 CALL $78B4    ; Run the skiing screen
- $6038 LD A,($5EB9)  ; { Is the game over?
+ $6038 LD A,($5EB9)  ; {Is the game over?
  $603B AND A         ; }
  $603C JR NZ,$6029   ; If so, jump back to the intro screen
- $603E LD A,($5EBE)  ; { Has Horace run out of money?
+ $603E LD A,($5EBE)  ; {Has Horace run out of money?
  $6041 AND A         ; }
  $6042 JR Z,$6029    ; If so, jump back to the intro screen
- $6044 LD A,($5EB8)  ; { Has Horace still got working skis?
+ $6044 LD A,($5EB8)  ; {Is the game in demo mode?
  $6047 AND A         ; }
- $6048 JR Z,$602C    ; If so, jump back to run the traffic screen
- $604A XOR A         ; { Otherwise signal out of money
+ $6048 JR Z,$602C    ; If not, jump back to run the traffic screen
+ $604A XOR A         ; {Otherwise signal out of money
  $604B LD ($5EBE),A  ; }
  $604E CALL $78B4    ; Run the skiing screen (but with no money)
  $6051 JR $6029      ; Jump back to the intro screen
@@ -1454,14 +1463,14 @@ c$6053 CALL $703F    ; Fill the screen with colours
  $605F CALL $71E6    ; Draw the ambulance
  $6062 CALL $74E3    ; Update Horace
  $6065 CALL $77AC    ;
- $6068 LD A,($5EB8)  ;
- $606B AND A         ;
- $606C JR NZ,$6074   ;
- $606E CALL $6CDD    ;
- $6071 CALL $6D6B    ;
-*$6074 CALL $6DDF    ;
+ $6068 LD A,($5EB8)  ; {Is the game in demo mode? (#R$5EB8)
+ $606B AND A         ; }
+ $606C JR NZ,$6074   ; If so, skip over updating the score
+ $606E CALL $6CDD    ; Update the score
+ $6071 CALL $6D6B    ; Print the score
+*$6074 CALL $6DDF    ; Sound the ambulance if it's on screen
  $6077 CALL $7F1F    ; Print a message if necessary
- $607A LD A,($5EB9)  ; { Is the game over?
+ $607A LD A,($5EB9)  ; {Is the game over?
  $607D AND A         ; }
  $607E RET NZ        ; Return if so
  $607F LD A,($5EB7)  ;
@@ -1494,22 +1503,22 @@ t$60B9 DEFM $12,$00,$11,$07,$10,$00,$16,$00,$00,"CASH $     SCORE        HI     
 t$60E2 DEFM $12,$00,$11,$07,$10,$00,$16,$00,$00,"\"",$89,"Z",$D5,$5E
 
 ; Sprite addresses - Horace first frame
-b$60F0 DEFW $5CE0   ; Up
- $60F2 DEFW $5D00   ; Right
- $60F4 DEFW $5D20   ; Down
- $60F6 DEFW $5D40   ; Left
+b$60F0 DEFW $5CE0    ; Up
+ $60F2 DEFW $5D00    ; Right
+ $60F4 DEFW $5D20    ; Down
+ $60F6 DEFW $5D40    ; Left
 
 ; Sprite addresses - Horace second frame
-b$60F8 DEFW $5D60   ; Up
- $60FA DEFW $5D80   ; Right
- $60FC DEFW $5DA0   ; Down
- $60FE DEFW $5DC0   ; Left
+b$60F8 DEFW $5D60    ; Up
+ $60FA DEFW $5D80    ; Right
+ $60FC DEFW $5DA0    ; Down
+ $60FE DEFW $5DC0    ; Left
 
 ; Sprite addresses - Horace with skis first frame
-b$6100 DEFW $6108   ; Up
- $6102 DEFW $6138   ; Right
- $6104 DEFW $6168   ; Down
- $6106 DEFW $6198   ; Left
+b$6100 DEFW $6108    ; Up
+ $6102 DEFW $6138    ; Right
+ $6104 DEFW $6168    ; Down
+ $6106 DEFW $6198    ; Left
 
 ; Horace with skis - up 1
 ;
@@ -1552,10 +1561,10 @@ b$6198 DEFB $1F,$0E,$0C,$1D,$15,$3C,$01,$03
  $61C0 DEFB $20,$70,$70,$F0,$E0,$E0,$C0,$C0
 
 ; Sprite addresses - Horace with skis second frame
-b$61C8 DEFW $61D0   ; Up
- $61CA DEFW $6200   ; Right
- $61CC DEFW $6230   ; Down
- $61CE DEFW $6260   ; Left
+b$61C8 DEFW $61D0    ; Up
+ $61CA DEFW $6200    ; Right
+ $61CC DEFW $6230    ; Down
+ $61CE DEFW $6260    ; Left
 
 ; Horace with skis - up 2
 ;
@@ -1760,118 +1769,118 @@ b$65D2 DEFB $13,$13,$13,$13,$13,$13,$13,$13
 ; Data block at 6662
 b$6662 DEFB $03,$03,$01,$40,$40,$20,$5D,$3C
  $666A DEFB $02,$02
- 
+
 ; Horace with skis - default data
 b$666C DEFB $03,$03,$01
- $666F DEFW $5F06
+ $666F DEFW $50F6
  $6671 DEFW $6138
  $6673 DEFB $3C,$02,$03
 
 ; Traffic definitions
-b$6676 DEFW $6682   ; Motorbike R
- $6678 DEFW $668F   ; Motorbike L
- $667A DEFW $669C   ; Car R
- $667C DEFW $66A9   ; Car L
- $667E DEFW $66B6   ; Truck R
- $6680 DEFW $66C3   ; Truck L
+b$6676 DEFW $6682    ; Motorbike R
+ $6678 DEFW $668F    ; Motorbike L
+ $667A DEFW $669C    ; Car R
+ $667C DEFW $66A9    ; Car L
+ $667E DEFW $66B6    ; Truck R
+ $6680 DEFW $66C3    ; Truck L
 
 ; Traffic definition 0 - Motorbike R
-b$6682 DEFB $02                 ; Vehicle type
- $6683 DEFB,$01                 ; Initial tick count
- $6684 DEFB $00                 ; Direction (right)
+b$6682 DEFB $02      ; Vehicle type
+ $6683 DEFB $01      ; Initial tick count
+ $6684 DEFB $00      ; Direction (right)
  $6685 DEFB $00
- $6686 DEFW $483D               ; Initial screen address
- $6688 DEFW $5E20               ; Sprite data (#R$5E20)
+ $6686 DEFW $483D    ; Initial screen address
+ $6688 DEFW $5E20    ; Sprite data (#R$5E20)
  $668A DEFW $5E60
- $668C DEFB $02                 ; Height
- $668D DEFB $04                 ; Width
+ $668C DEFB $02      ; Height
+ $668D DEFB $04      ; Width
  $668E DEFB $00
 
 ; Traffic definition 1 - Motorbike L
-b$668F DEFB $02                 ; Vehicle type
- $6690 DEFB $01                 ; Initial tick count
- $6691 DEFB $01                 ; Direction (left)
+b$668F DEFB $02      ; Vehicle type
+ $6690 DEFB $01      ; Initial tick count
+ $6691 DEFB $01      ; Direction (left)
  $6692 DEFB $01
- $6693 DEFW $505F               ; Initial screen address
- $6695 DEFW $5DE0               ; Sprite data (#R$5DE0)
+ $6693 DEFW $505F    ; Initial screen address
+ $6695 DEFW $5DE0    ; Sprite data (#R$5DE0)
  $6697 DEFW $5BFC
- $6699 DEFB $02                 ; Height
- $669A DEFB $04                 ; Width
+ $6699 DEFB $02      ; Height
+ $669A DEFB $04      ; Width
  $669B DEFB $00
 
 ; Traffic definition 2 - Car R
-b$669C DEFB $03                 ; Vehicle type
- $669D DEFB $01                 ; Initial tick count
- $669E DEFB $00                 ; Direction (right)
+b$669C DEFB $03      ; Vehicle type
+ $669D DEFB $01      ; Initial tick count
+ $669E DEFB $00      ; Direction (right)
  $669F DEFB $00
- $66A0 DEFW $483B               ; Initial screen address
- $66A2 DEFW $62F0               ; Sprite data (#R$62F0)
+ $66A0 DEFW $483B    ; Initial screen address
+ $66A2 DEFW $62F0    ; Sprite data (#R$62F0)
  $66A4 DEFW $5E6A
- $66A6 DEFB $02                 ; Height
- $66A7 DEFB $06                 ; Width
+ $66A6 DEFB $02      ; Height
+ $66A7 DEFB $06      ; Width
  $66A8 DEFB $00
 
 ; Traffic definition 3 - Car L
-b$66A9 DEFB $03                 ; Vehicle type
- $66AA DEFB $01                 ; Initial tick count
- $66AB DEFB $01                 ; Direction (left)
+b$66A9 DEFB $03      ; Vehicle type
+ $66AA DEFB $01      ; Initial tick count
+ $66AB DEFB $01      ; Direction (left)
  $66AC DEFB $01
- $66AD DEFW $505F               ; Initial screen address
- $66AF DEFW $6290               ; Sprite data (#R$6290)
+ $66AD DEFW $505F    ; Initial screen address
+ $66AF DEFW $6290    ; Sprite data (#R$6290)
  $66B1 DEFW $5E64
- $66B3 DEFB $02                 ; Height
- $66B4 DEFB $06                 ; Width
+ $66B3 DEFB $02      ; Height
+ $66B4 DEFB $06      ; Width
  $66B5 DEFB $00
 
 ; Traffic definition 4 - Truck R
-b$66B6 DEFB $06                 ; Vehicle type
- $66B7 DEFB $01                 ; Initial tick count
- $66B8 DEFB $00                 ; Direction (right)
+b$66B6 DEFB $06      ; Vehicle type
+ $66B7 DEFB $01      ; Initial tick count
+ $66B8 DEFB $00      ; Direction (right)
  $66B9 DEFB $00
- $66BA DEFW $4838               ; Initial screen address
- $66BC DEFW $6431               ; Sprite data (#R$6431)
+ $66BA DEFW $4838    ; Initial screen address
+ $66BC DEFW $6431    ; Sprite data (#R$6431)
  $66BE DEFW $6509
- $66C0 DEFB $03                 ; Height
- $66C1 DEFB $09                 ; Width
+ $66C0 DEFB $03      ; Height
+ $66C1 DEFB $09      ; Width
  $66C2 DEFB $00
 
 ; Traffic definition 5 - Truck L
-b$66C3 DEFB $06                 ; Vehicle type
- $66C4 DEFB $01                 ; Initial tick count
- $66C5 DEFB $01                 ; Direction (left)
+b$66C3 DEFB $06      ; Vehicle type
+ $66C4 DEFB $01      ; Initial tick count
+ $66C5 DEFB $01      ; Direction (left)
  $66C6 DEFB $01
- $66C7 DEFW $505F               ; Initial screen address
- $66C9 DEFW $6350               ; Sprite data (#R$6350)
+ $66C7 DEFW $505F    ; Initial screen address
+ $66C9 DEFW $6350    ; Sprite data (#R$6350)
  $66CB DEFW $6428
- $66CD DEFB $03                 ; Height
- $66CE DEFB $09                 ; Width
+ $66CD DEFB $03      ; Height
+ $66CE DEFB $09      ; Width
  $66CF DEFB $00
 
 ; Ambulance L definition
-b$66D0 DEFB $01                 ; Vehicle type
- $66D1 DEFB $01                 ; Initial tick count
- $66D2 DEFB $01                 ; Direction (left)
+b$66D0 DEFB $01      ; Vehicle type
+ $66D1 DEFB $01      ; Initial tick count
+ $66D2 DEFB $01      ; Direction (left)
  $66D3 DEFB $01
- $66D4 DEFW $505F               ; Initial screen address
- $66D6 DEFW $6512               ; Sprite data (#R$6512)
+ $66D4 DEFW $505F    ; Initial screen address
+ $66D6 DEFW $6512    ; Sprite data (#R$6512)
  $66D8 DEFW $66DD
- $66DA DEFB $02                 ; Height
- $66DB DEFB $06                 ; Width
+ $66DA DEFB $02      ; Height
+ $66DB DEFB $06      ; Width
  $66DC DEFB $00
 
 ; Ambulance L data
 b$66DD DEFB $00,$03,$03,$03,$03,$00
 
 ; Ambulance R definition
-b$66E3 DEFB $01                 ; Vehicle type
- $66E4 DEFB $01                 ; Initial tick count
- $66E5 DEFB $00                 ; Direction (right)
+b$66E3 DEFB $01      ; Vehicle type
+ $66E4 DEFB $01      ; Initial tick count
+ $66E5 DEFB $00      ; Direction (right)
  $66E6 DEFB $00
- $66E7 DEFW $483B               ; Initial screen address
- $66E9 DEFW $6572               ; Sprite data (#R$6512)
+ $66E7 DEFW $483B    ; Initial screen address
+ $66E9 DEFW $6572    ; Sprite data (#R$6512)
  $66EB DEFW $66F0
- $66ED DEFB $02                 ; Height
- $66EE DEFB $06                 ; Width
+ $66ED DEFB $02      ; Height
+ $66EE DEFB $06      ; Width
  $66EF DEFB $00
 
 ; Ambulance R data
@@ -1882,8 +1891,8 @@ b$66F6 DEFB $39,$3B,$3B,$3B,$3B,$39,$39,$3B
  $66FE DEFB $3B,$3B,$3B,$39
 
 ; Horace skiing sprite table
-w$6702 DEFW $670C   ; East
- $6704 DEFW $6754   ; Southeast
+w$6702 DEFW $670C    ; East
+ $6704 DEFW $6754    ; Southeast
  $6706 DEFW $679C
  $6708 DEFW $67E4
  $670A DEFW $682C
@@ -1957,7 +1966,7 @@ b$682C DEFB $3F,$0F,$00,$00,$00,$00,$00,$00
 b$6874 DEFB $01,$01,$02
  $6877 DEFW $408D
  $6879 DEFW $679C
- $689B DEFB $39,$03,$03
+ $687B DEFB $39,$03,$03
 
 ; Data block at 687E
 b$687E DEFB $3F,$3A,$3A
@@ -1965,7 +1974,9 @@ b$687E DEFB $3F,$3A,$3A
 ; Data block at 6881
 b$6881 DEFB $3F,$3D,$3D
 
-; Data block at 6884
+; Tree
+;
+; #CALL:print_udg(#PC,3,5,$3C,tree)
 b$6884 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $688C DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $6894 DEFB $00,$00,$00,$00,$00,$00,$00,$00
@@ -1982,22 +1993,59 @@ b$6884 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $68EC DEFB $18,$3C,$7E,$DB,$3C,$7E,$FF,$FF
  $68F4 DEFB $00,$00,$00,$00,$00,$00,$80,$C0
 
-; Data block at 68FC
+; Slope
+;
+; #CALL:print_udg(#PC,3,2,$38,slope)
 b$68FC DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $6904 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $690C DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $6914 DEFB $00,$00,$00,$00,$03,$0F,$3C,$E0
  $691C DEFB $00,$00,$00,$E0,$FC,$0F,$00,$00
  $6924 DEFB $00,$00,$00,$00,$00,$E0,$7C,$07
- $692C DEFB $3F,$3F,$3F,$38,$38,$38,$3E,$69
- $6934 DEFB $47,$69,$50,$69,$59,$69,$62,$69
- $693C DEFB $6B,$69,$02,$00,$00,$84,$68,$18
- $6944 DEFB $5B,$05,$03,$00,$00,$00,$00,$00
- $694C DEFB $00,$00,$00,$00,$01,$00,$00,$00
- $6954 DEFB $5B,$7E,$68,$03,$01,$01,$00,$00
- $695C DEFB $00,$5B,$81,$68,$03,$01,$03,$00
- $6964 DEFB $00,$FC,$68,$2C,$69,$02,$03,$00
- $696C DEFB $00,$00,$00,$00,$00,$00,$00,$00
+
+; Data block at 692C
+b$692C DEFB $3F,$3F,$3F,$38,$38,$38
+
+; Skiing object definitions
+b$6932 DEFW $693E    ; Object 1 - tree
+ $6934 DEFW $6947
+ $6936 DEFW $6950    ; Object 2
+ $6938 DEFW $6959
+ $693A DEFW $6962    ; Object 3
+ $693C DEFW $696B
+
+; Skiing object 1 - tree
+b$693E DEFB $02,$00,$00
+ $6941 DEFW $6884       ; Sprite address
+ $6943 DEFW $5B18
+ $6945 DEFB $05         ; Height
+ $6946 DEFB $03         ; Width
+
+; Data block at 6947
+b$6947 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+ $694F DEFB $00
+
+; Data block at 6950
+b$6950 DEFB $01,$00,$00
+ $6953 DEFW $5B00       ; Sprite address
+ $6955 DEFW $687E
+ $6957 DEFB $03         ; Height
+ $6958 DEFB $01         ; Width
+
+; Data block at 6959
+b$6959 DEFB $01,$00,$00,$00,$5B,$81,$68,$03
+ $6961 DEFB $01
+
+; Data block at 6962
+b$6962 DEFB $03,$00,$00
+ $6965 DEFW $68FC       ; Sprite address
+ $6967 DEFB $2C,$69
+ $6969 DEFB $02         ; Height
+ $696A DEFB $03         ; Width
+
+; Data block at 696B
+b$696B DEFB $00,$00,$00,$00,$00,$00,$00,$00
+ $6973 DEFB $00
 
 ; Horace crashed into a tree
 ;
@@ -2019,13 +2067,13 @@ t$69C8 DEFM $16,$0A,$8A,"      ",$85,$12,$00,$11,$02,$10,$07,$16,$16,$0A," FINIS
  $6A09 DEFM $10,$01,$16,$16,$0A,$8A,"      ",$85,$12,$00,$11,$07,$10,$07,$16,$16,$0A,"        "
 
 ; String table
-w$6A27 DEFW $6A35   ; SKI HIRE $10
- $6A29 DEFW $6A56   ; AMBULANCE FEE $10
- $6A2B DEFW $6A77   ; LUCKY! SKIS STILL OK
- $6A2D DEFW $6A98   ; BONUS 100 POINTS
- $6A2F DEFW $6AB9   ; BAD LUCK! SKIS BROKEN
- $6A31 DEFW $6ADA   ; SORRY - NO MONEY NO SKI!
- $6A33 DEFW $6AFB   ; MISSED BONUS
+w$6A27 DEFW $6A35    ; SKI HIRE $10
+ $6A29 DEFW $6A56    ; AMBULANCE FEE $10
+ $6A2B DEFW $6A77    ; LUCKY! SKIS STILL OK
+ $6A2D DEFW $6A98    ; BONUS 100 POINTS
+ $6A2F DEFW $6AB9    ; BAD LUCK! SKIS BROKEN
+ $6A31 DEFW $6ADA    ; SORRY - NO MONEY NO SKI!
+ $6A33 DEFW $6AFB    ; MISSED BONUS
 
 ; String 0 : SKI HIRE $10
 t$6A35 DEFM $12,$01,$11,$02,$10,$07,$16,$01,$04,"***   SKI HIRE $10   ***"
@@ -2068,7 +2116,7 @@ t$6B7C DEFM $12,$00,$11,$07,$10,$01,$16,$16,$01,"COPYRIGHT ",$7F," 1982 BEAM SOF
 ; Initialize display
 ;
 ; Used by the routines at #R$70AB and #R$792A.
-c$6BC0 LD B,$18      ; { Clear #N$18 lines
+c$6BC0 LD B,$18      ; {Clear #N$18 lines
  $6BC2 CALL $0E44    ; }
  $6BC5 XOR A         ; Set #REGa to 0 to reset some flags
  $6BC6 LD ($5EFD),A  ;
@@ -2079,12 +2127,12 @@ c$6BC0 LD B,$18      ; { Clear #N$18 lines
  $6BD5 LD ($5EB7),A  ;
  $6BD8 INC A         ;
  $6BD9 LD ($5E9C),A  ;
- $6BDC LD HL,$5F07   ; { Clear object screen addresses
+ $6BDC LD HL,$5F07   ; {Clear object screen addresses
  $6BDF LD DE,$5F08   ;
  $6BE2 LD BC,$00DF   ;
  $6BE5 LD (HL),$00   ;
  $6BE7 LDIR          ; }
- $6BE9 LD A,($5EB8)  ; { Is the game in demo mode?
+ $6BE9 LD A,($5EB8)  ; {Is the game in demo mode?
  $6BEC AND A         ; }
  $6BED JR Z,$6C02    ; Jump forward if not
  $6BEF LD DE,$6B1C   ; Set #REGde to demo mode text 1 (#R$6B1C)
@@ -2107,7 +2155,7 @@ c$6C0B LD HL,$5CDB   ; Point #REGhl at the hi score digits (#R$5CDB)
  $6C13 LD ($60EA),A  ;
  $6C16 LD DE,$60E2   ; Print text starting at #R$60e2
  $6C19 LD BC,$000E   ; Set the length to #N$E
- $6C1C CALL $203C    ; { Print the string and return
+ $6C1C CALL $203C    ; {Print the string and return
  $6C1F RET           ; }
 
 ; Draw a sprite
@@ -2120,18 +2168,18 @@ c$6C20 LD A,($5F05)  ; Put the number of rows to draw in #REGa.
  $6C23 EX AF,AF'     ; Swap #REGaf for the alternate set
  $6C24 PUSH HL       ; Store #REGhl
 *$6C25 PUSH HL       ; Store #REGhl
- $6C26 LD A,($5F06)  ; { Put the number of columns in #REGc
+ $6C26 LD A,($5F06)  ; {Put the number of columns in #REGc
  $6C29 LD C,A        ; }
 *$6C2A PUSH HL       ; Store #REGhl
  $6C2B LD B,$08      ; Repeat for 8 sub-rows
-*$6C2D LD A,(DE)     ; { Move the sprite data on screen
+*$6C2D LD A,(DE)     ; {Move the sprite data on screen
  $6C2E LD (HL),A     ; }
  $6C2F INC DE        ; Move to the next sprite data
  $6C30 INC H         ; Move to the next sub-row
  $6C31 DJNZ $6C2D    ; Repeat until all sub-rows have been drawn
  $6C33 POP HL        ; Restore #REGhl
  $6C34 INC HL        ; Move to the next column
- $6C35 DEC C         ; { Repeat until all columns are drawn
+ $6C35 DEC C         ; {Repeat until all columns are drawn
  $6C36 JR NZ,$6C2A   ; }
  $6C38 POP HL        ; Restore #REGhl
  $6C39 EX AF,AF'     ; Restore number of rows in #REGa
@@ -2139,18 +2187,18 @@ c$6C20 LD A,($5F05)  ; Put the number of rows to draw in #REGa.
  $6C3B LD C,$20      ; Next row has offset of #N$20 added
  $6C3D JR Z,$6C4D    ; Jump forward if there are no rows left to draw
  $6C3F EX AF,AF'     ; Swap #REGaf to remember the number of rows
- $6C40 AND A         ; { Move up a row
+ $6C40 AND A         ; {Move up a row
  $6C41 SBC HL,BC     ; }
  $6C43 BIT 0,H       ; Has the top of this screen sector been reached?
  $6C45 JR Z,$6C25    ; Jump back if not.
- $6C47 LD A,H        ; { The sprite overlaps a third of the screen, 
- $6C48 SUB $07       ; so ajust the target address
- $6C4A LD H,A        ; 
+ $6C47 LD A,H        ; {The sprite overlaps a third of the screen, so ajust the
+ $6C48 SUB $07       ; target address
+ $6C4A LD H,A        ;
  $6C4B JR $6C25      ; }
 ; The sprite is now on screen, so set the attributes
 *$6C4D POP HL        ; Restore #REGhl
  $6C4E LD A,H        ; Take the high byte of the screen address
- $6C4F AND $18       ; { Convert it to an attribute address
+ $6C4F AND $18       ; {Convert it to an attribute address
  $6C51 SRA A         ;
  $6C53 SRA A         ;
  $6C55 SRA A         ;
@@ -2198,10 +2246,10 @@ c$6C8B LD HL,($5E89) ; Put Horace's current screen address in #REGhl (#R$5E89)
  $6C93 LD A,L        ;
  $6C94 CP $40        ;
  $6C96 RET C         ;
-*$6C97 EXX           ; { Point alternate #REGhl' at the
- $6C98 LD HL,$60B5   ; sound effect data for Horace being run over (#R$60B5)
+*$6C97 EXX           ; {Point alternate #REGhl' at the sound effect data for
+ $6C98 LD HL,$60B5   ; Horace being run over (#R$60B5)
  $6C9B EXX           ; }
- $6C9C LD A,$02      ; { Set Horace's attribute to red on black (#R$5E7A)
+ $6C9C LD A,$02      ; {Set Horace's attribute to red on black (#R$5E7A)
  $6C9E LD ($5E7A),A  ; }
  $6CA1 LD DE,($5F02) ;
  $6CA5 CALL $6C20    ; Draw the sprite
@@ -2212,7 +2260,7 @@ c$6C8B LD HL,($5E89) ; Put Horace's current screen address in #REGhl (#R$5E89)
  $6CAF LD A,($5E7A)  ; Restore Horace's attribute
  $6CB2 CALL $6CB9    ; Redraw the attributes
  $6CB5 POP BC        ; Restore number of times round the loop
- $6CB6 DJNZ $6CAA    ; { Repeat until flashed 5 times
+ $6CB6 DJNZ $6CAA    ; {Repeat until flashed 5 times
  $6CB8 RET           ; }
 
 ; Change Horace's attribute
@@ -2224,9 +2272,9 @@ c$6CB9 LD DE,$FFE0   ; Set #REGde to move back one row
  $6CBC LD HL,($5E78) ;
  $6CBF LD B,$02      ; 2 rows to draw
  $6CC1 LD C,A        ; Put the attribute in #REGc
-*$6CC2 PUSH BC       ; { Store the row count and attribute address
+*$6CC2 PUSH BC       ; {Store the row count and attribute address
  $6CC3 PUSH HL       ; }
- $6CC4 LD A,($5F06)  ; { Put the number of columns to draw (#R$5F06) in #REGb
+ $6CC4 LD A,($5F06)  ; {Put the number of columns to draw (#R$5F06) in #REGb
  $6CC7 LD B,A        ; }
 *$6CC8 LD (HL),C     ; Set the attribute
  $6CC9 INC HL        ; Move to the next column
@@ -2236,12 +2284,12 @@ c$6CB9 LD DE,$FFE0   ; Set #REGde to move back one row
  $6CCE POP BC        ; Restore the row count
  $6CCF DJNZ $6CC2    ; Loop until all rows updated
  $6CD1 EXX           ; Swap out main registers
- $6CD2 PUSH HL       ; { Play a note
- $6CD3 CALL $6E0D    ; 
+ $6CD2 PUSH HL       ; {Play a note
+ $6CD3 CALL $6E0D    ;
  $6CD6 POP HL        ; }
- $6CD7 LD BC,$FFFC   ; { Move back to the previous position in the note buffer
+ $6CD7 LD BC,$FFFC   ; {Move back to the previous position in the note buffer
  $6CDA ADD HL,BC     ; }
- $6CDB EXX           ; { Swap back main registers and return
+ $6CDB EXX           ; {Swap back main registers and return
  $6CDC RET           ; }
 
 ; Update the score
@@ -2266,7 +2314,7 @@ c$6CDD LD A,($5EFD)  ;
  $6CF9 LD A,($5CD5)  ;
  $6CFC CP $30        ;
  $6CFE JR NC,$6D0C   ;
- $6D00 LD HL,$5CD5   ; { Set the score to 0
+ $6D00 LD HL,$5CD5   ; {Set the score to 0
  $6D03 LD DE,$5CD6   ;
  $6D06 LD (HL),$30   ;
  $6D08 LD C,$05      ;
@@ -2288,7 +2336,7 @@ c$6CDD LD A,($5EFD)  ;
  $6D2B RET NC        ;
  $6D2C LD A,B        ;
  $6D2D LD ($5EC3),A  ;
- $6D30 LD HL,$5EBF   ; { Add $10
+ $6D30 LD HL,$5EBF   ; {Add $10
  $6D33 INC (HL)      ; }
  $6D34 RET           ;
 
@@ -2298,7 +2346,8 @@ c$6CDD LD A,($5EFD)  ;
 ;
 ; Pointer to score data
 c$6D35 LD BC,$050A   ;
- $6D38 LD DE,$3A30   ; Set #REGd to the maxium ( > 9) and #REGe to the minimum (0)
+ $6D38 LD DE,$3A30   ; Set #REGd to the maxium ( > 9) and #REGe to the minimum
+                     ; (0)
 *$6D3B LD A,(HL)     ; Get the next digit
 *$6D3C CP D          ; Is it less than the maximum?
  $6D3D JR NC,$6D48   ; Jump forward if not
@@ -2323,7 +2372,7 @@ c$6D35 LD BC,$050A   ;
 ; Copy a number into a string
 ;
 ; Used by the routines at #R$6C0B, #R$6CDD and #R$6D6B.
-; 
+;
 ; HL Address of data to copy
 c$6D53 LD DE,$60EB   ; Point #REGde at the dynamic text (#R$60e2)
  $6D56 LD BC,$0005   ; Copy five digits
@@ -2339,7 +2388,7 @@ c$6D53 LD DE,$60EB   ; Point #REGde at the dynamic text (#R$60e2)
  $6D68 DJNZ $6D61    ; Repeat until all digits looked at
 *$6D6A RET           ; All done, so return
 
-; Routine at 6D6B
+; Print the score
 ;
 ; Used by the routines at #R$6053 and #R$78B4.
 c$6D6B LD A,($5EFD)  ;
@@ -2352,22 +2401,22 @@ c$6D6B LD A,($5EFD)  ;
  $6D7B XOR A         ;
  $6D7C LD ($5EBE),A  ;
  $6D7F LD ($5EBF),A  ;
-*$6D82 ADD A,$30     ; { Convert this to ASCII and store it in the 'tens' digit
+*$6D82 ADD A,$30     ; {Convert this to ASCII and store it in the 'tens' digit
  $6D84 LD ($5CD3),A  ; }
- $6D87 LD HL,$5CD4   ;
- $6D8A CALL $6D35    ;
-*$6D8D LD HL,$5CD0   ;
- $6D90 CALL $6D53    ;
- $6D93 LD DE,$60EB   ;
+ $6D87 LD HL,$5CD4   ; Point #REGhl at the end of the cash total (#R$5CD2)
+ $6D8A CALL $6D35    ; Convert this to a string
+*$6D8D LD HL,$5CD0   ; Point #REGhl at ??
+ $6D90 CALL $6D53    ; Convert this to a string
+ $6D93 LD DE,$60EB   ; {Add trailing spaces to the figure to print
  $6D96 LD HL,$60ED   ;
  $6D99 LD BC,$0003   ;
- $6D9C LDIR          ;
- $6D9E LD A,$06      ;
- $6DA0 LD ($60EA),A  ;
- $6DA3 LD DE,$60E2   ;
+ $6D9C LDIR          ; }
+ $6D9E LD A,$06      ; {Add the TAB character
+ $6DA0 LD ($60EA),A  ; }
+ $6DA3 LD DE,$60E2   ; {Print the string and return
  $6DA6 LD BC,$000C   ;
  $6DA9 CALL $203C    ;
- $6DAC RET           ;
+ $6DAC RET           ; }
 
 ; Generate a random number
 ;
@@ -2377,12 +2426,12 @@ c$6D6B LD A,($5EFD)  ;
 c$6DAD PUSH HL       ; Store #REGhl
  $6DAE LD HL,($5E87) ; Get the current seed value (#R$5E87)
  $6DB1 INC HL        ; Increment it
- $6DB2 LD A,$3F      ; { Change the high byte to be ANDed against #N$3F
+ $6DB2 LD A,$3F      ; {Change the high byte to be ANDed against #N$3F
  $6DB4 AND H         ;
  $6DB5 LD H,A        ; }
  $6DB6 LD A,(HL)     ; Set the return value to the contents of this
  $6DB7 LD ($5E87),HL ; Store the new seed value
- $6DBA POP HL        ; { Restore #REGhl and return
+ $6DBA POP HL        ; {Restore #REGhl and return
  $6DBB RET           ; }
 
 ; Update the high score if required
@@ -2395,47 +2444,50 @@ c$6DBC LD HL,$5CD6   ; Point #REGhl at the current score (#R$5CD6)
  $6DC5 CP (HL)       ; Compare it to the current digit
  $6DC6 JR Z,$6DCB    ; Jump forward if the digits are the same
  $6DC8 RET NC        ; Return if the current digit is less
- $6DC9 JR $6DD0      ; Otherwise, the current score must be higher, so handle that
+ $6DC9 JR $6DD0      ; Otherwise, the current score must be higher, so handle
+                     ; that
 ; This score digit is the same as the hi score, what about the others?
-*$6DCB INC DE        ; { Move to the next digits
+*$6DCB INC DE        ; {Move to the next digits
  $6DCC INC HL        ; }
  $6DCD DJNZ $6DC4    ; Jump back if there are more digits to check
- $6DCF RET           ; Otherwise the current score must equal the hi score, so exit
+ $6DCF RET           ; Otherwise the current score must equal the hi score, so
+                     ; exit
 ; The current score is greater than the hi score, so update it
-*$6DD0 LD HL,$5CD6   ; { Copy the current score into the high score
+*$6DD0 LD HL,$5CD6   ; {Copy the current score into the high score
  $6DD3 LD DE,$5CDB   ;
  $6DD6 LD BC,$0005   ;
  $6DD9 LDIR          ; }
- $6DDB CALL $6C0B    ; { Print the high score
- $6DDE RET           ; and return }
+ $6DDB CALL $6C0B    ; {Print the high score and return
+ $6DDE RET           ; }
 
-; Routine at 6DDF
+; Sound the ambulance if it's on screen
 ;
 ; Used by the routine at #R$6053.
-c$6DDF LD A,$BF      ; { Was 'ENTER' pressed?
+c$6DDF LD A,$BF      ; {Was 'ENTER' pressed?
  $6DE1 IN A,($FE)    ;
  $6DE3 AND $01       ; }
  $6DE5 JR NZ,$6DF0   ; Jump forward if so
- $6DE7 LD A,($5E71)  ;
+ $6DE7 LD A,($5E71)  ; {Toggle the pause flag
  $6DEA INC A         ;
  $6DEB AND $01       ;
- $6DED LD ($5E71),A  ;
-*$6DF0 LD A,($5E71)  ;
- $6DF3 AND A         ;
- $6DF4 JR Z,$6E1B    ;
- $6DF6 LD A,($5F07)  ;
- $6DF9 AND A         ;
- $6DFA JR Z,$6E1B    ;
+ $6DED LD ($5E71),A  ; }
+*$6DF0 LD A,($5E71)  ; {Is the pause flag zero?
+ $6DF3 AND A         ; }
+ $6DF4 JR Z,$6E1B    ; If so, jump forward to pause.
+ $6DF6 LD A,($5F07)  ; {Is an ambulance on screen?
+ $6DF9 AND A         ; }
+ $6DFA JR Z,$6E1B    ; If not, simply pause. Otherwise move forward to #R$6DFC
+                     ; to play a sound effect
 
 ; Play a sound effect
 ;
 ; Used by the routine at #R$783B.
-c$6DFC LD A,($5E72)  ; { Toggle effect flag between 0 and 1
+c$6DFC LD A,($5E72)  ; {Toggle effect flag between 0 and 1
  $6DFF INC A         ;
  $6E00 AND $01       ;
  $6E02 LD ($5E72),A  ; }
- $6E05 LD HL,$5BF4   ; { If the flag is 0, use #R$5BF8, otherwise #R$5BF4.
- $6E08 JR Z,$6E0D    ; Control then passes to 
+ $6E05 LD HL,$5BF4   ; {If the flag is 0, use #R$5BF8, otherwise #R$5BF4.
+ $6E08 JR Z,$6E0D    ; Control then passes to
  $6E0A LD HL,$5BF8   ; }
 
 ; Play a note
@@ -2443,31 +2495,32 @@ c$6DFC LD A,($5E72)  ; { Toggle effect flag between 0 and 1
 ; Used by the routines at #R$6CB9, #R$6DFC and #R$7C74.
 ;
 ; HL Pointer to note data
-c$6E0D LD E,(HL)     ; { First two bytes are the length 
+c$6E0D LD E,(HL)     ; {First two bytes are the length
  $6E0E INC HL        ;
  $6E0F LD D,(HL)     ; }
- $6E10 INC HL        ; { Second two bytes are the frequency
+ $6E10 INC HL        ; {Second two bytes are the frequency
  $6E11 LD C,(HL)     ;
  $6E12 INC HL        ;
  $6E13 LD B,(HL)     ; }
- $6E14 PUSH BC       ; { Put the frequency in #REGhl, which is what the ROM routine expects.
- $6E15 POP HL        ; }
+ $6E14 PUSH BC       ; {Put the frequency in #REGhl, which is what the ROM
+ $6E15 POP HL        ; routine expects.}
  $6E16 CALL $03B5    ; Run the ROM routine to play a note
- $6E19 DI            ; { Disable interrupts (set in the ROM routine) and return
+ $6E19 DI            ; {Disable interrupts (set in the ROM routine) and return
  $6E1A RET           ; }
 
 ; Pause
 ;
 ; Used by the routines at #R$6DDF, #R$703F and #R$78B4.
 c$6E1B LD BC,($5E97) ; Load #REGbc with the time to pause
-; This entry point is used by the routine at #R$783B, where #REGbc is already set to the pause time
+; This entry point is used by the routine at #R$783B, where #REGbc is already
+; set to the pause time
 *$6E1F DEC BC        ; Decrement the timer
- $6E20 LD A,B        ; { Is it zero?
+ $6E20 LD A,B        ; {Is it zero?
  $6E21 OR C          ; }
  $6E22 JR NZ,$6E1F   ; Jump back if not
  $6E24 RET           ; Otherwise return
 
-; Plsy a "slope" sound effect
+; Play a "slope" sound effect
 ;
 ; Used by the routines at #R$7532, #R$7D5F and #R$7F04.
 c$6E25 LD HL,$5E9B   ;
@@ -2499,10 +2552,11 @@ c$6E25 LD HL,$5E9B   ;
 ;
 ; B On exit, holds 0 = up, 1 = right, 2 = down, 3 = left
 c$6E4A LD BC,$04F7   ;
- $6E4D LD DE,$5EB8   ;
- $6E50 LD A,(DE)     ;
- $6E51 AND A         ;
- $6E52 JR Z,$6EAF    ;
+ $6E4D LD DE,$5EB8   ; Point #REGde to the demo mode flag (#R$5EB8)
+ $6E50 LD A,(DE)     ; {Is the game in demo mode?
+ $6E51 AND A         ; }
+ $6E52 JR Z,$6EAF    ; If so, skip over the control input
+; The game is not in demo mode, so read the direction controls
  $6E54 BIT 0,A       ;
  $6E56 JR NZ,$6E60   ;
  $6E58 CP $02        ;
@@ -2552,87 +2606,87 @@ c$6E4A LD BC,$04F7   ;
  $6EAA INC A         ;
  $6EAB LD ($5EB9),A  ;
  $6EAE RET           ;
-*$6EAF LD A,$FD      ; { Was 'S' pressed?
+*$6EAF LD A,$FD      ; {Was 'S' pressed?
  $6EB1 IN A,($FE)    ;
  $6EB3 AND $02       ; }
  $6EB5 JR NZ,$6ECB   ; Jump forward if not
 ; 'S' was pressed, so pause the game
-*$6EB7 LD A,$7F      ; { Read 'SPACE' to 'B' on the keyboard
+*$6EB7 LD A,$7F      ; {Read 'SPACE' to 'B' on the keyboard
  $6EB9 IN A,($FE)    ; }
- $6EBB AND $1F       ; { Were any keys pressed?
+ $6EBB AND $1F       ; {Were any keys pressed?
  $6EBD CP $1F        ; }
  $6EBF JR NZ,$6ECB   ; Jump forward if so
- $6EC1 LD A,$FE      ; { Read 'CAPS' to 'V' on the keyboard
+ $6EC1 LD A,$FE      ; {Read 'CAPS' to 'V' on the keyboard
  $6EC3 IN A,($FE)    ; }
- $6EC5 AND $1F       ; { Were any keys pressed?
+ $6EC5 AND $1F       ; {Were any keys pressed?
  $6EC7 CP $1F        ; }
  $6EC9 JR Z,$6EB7    ; Jump back if not
 ; Game is not paused, so carry on
-*$6ECB LD A,$BF      ; { Was 'H' pressed?
+*$6ECB LD A,$BF      ; {Was 'H' pressed?
  $6ECD IN A,($FE)    ;
  $6ECF AND $10       ; }
  $6ED1 JR NZ,$6EDF   ; Jump forward if not
- $6ED3 LD A,$FD      ; { Was 'G' pressed?
+ $6ED3 LD A,$FD      ; {Was 'G' pressed?
  $6ED5 IN A,($FE)    ;
  $6ED7 AND $10       ; }
  $6ED9 JR NZ,$6EDF   ; Jump forward if not
 ; Game is aborted
- $6EDB INC A         ; { Set the 'game over' flag 
+ $6EDB INC A         ; {Set the 'game over' flag
  $6EDC LD ($5EB9),A  ; }
 ; Check for movement
 *$6EDF LD DE,$DFEF   ; Set #REGde to read the top right of the keyboard
 ; Check for moving right
- $6EE2 LD A,D        ; { Read 'P' - 'Y'
+ $6EE2 LD A,D        ; {Read 'P' - 'Y'
  $6EE3 IN A,($FE)    ; }
  $6EE5 BIT 0,A       ; Was 'P' pressed?
  $6EE7 JR Z,$6EF7    ; Jump forward if so
- $6EE9 LD A,E        ; { Read '0' - '6'
+ $6EE9 LD A,E        ; {Read '0' - '6'
  $6EEA IN A,($FE)    ; }
  $6EEC BIT 3,A       ; Was '7' pressed?
  $6EEE JR Z,$6EF7    ; Jump forward if so.
- $6EF0 LD A,C        ; { Read '1' - '5'
+ $6EF0 LD A,C        ; {Read '1' - '5'
  $6EF1 IN A,($FE)    ; }
  $6EF3 BIT 1,A       ; Was '2' pressed?
  $6EF5 JR NZ,$6EF9   ; Jump forward if not.
 *$6EF7 LD B,$01      ; Set direction to RIGHT
 ; Check for moving left
-*$6EF9 LD A,C        ; { Read '1' - '5'
+*$6EF9 LD A,C        ; {Read '1' - '5'
  $6EFA IN A,($FE)    ; }
  $6EFC BIT 0,A       ; Was '1' pressed?
  $6EFE JR Z,$6F0E    ; Jump forward if so
- $6F00 LD A,D        ; { Read 'P' - 'Y'
+ $6F00 LD A,D        ; {Read 'P' - 'Y'
  $6F01 IN A,($FE)    ; }
  $6F03 BIT 2,A       ; Was 'I' pressed?
  $6F05 JR Z,$6F0E    ; Jump forward if so
- $6F07 LD A,E        ; { Read '0' - '6'
+ $6F07 LD A,E        ; {Read '0' - '6'
  $6F08 IN A,($FE)    ; }
  $6F0A BIT 4,A       ; Was '6' pressed?
  $6F0C JR NZ,$6F10   ; Jump foward if not
 *$6F0E LD B,$03      ; Set direction to LEFT
 ; Check for moving up
-*$6F10 LD A,E        ; { Read '0' - '6'
+*$6F10 LD A,E        ; {Read '0' - '6'
  $6F11 IN A,($FE)    ; }
  $6F13 BIT 1,A       ; Was '9' pressed?
  $6F15 JR Z,$6F26    ; Jump forward if so
- $6F17 LD A,$FB      ; { Read 'Q' - 'T'
+ $6F17 LD A,$FB      ; {Read 'Q' - 'T'
  $6F19 IN A,($FE)    ; }
  $6F1B BIT 0,A       ; Was 'Q' pressed?
  $6F1D JR Z,$6F26    ; Jump forward if so
- $6F1F LD A,C        ; { Read '1' - '5'
+ $6F1F LD A,C        ; {Read '1' - '5'
  $6F20 IN A,($FE)    ; }
  $6F22 BIT 3,A       ; Was '4' pressed?
  $6F24 JR NZ,$6F28   ; Jump forward if not
 *$6F26 LD B,$00      ; Set direction to UP
 ; Check for moving down
-*$6F28 LD A,C        ; { Read '1' - '5'
+*$6F28 LD A,C        ; {Read '1' - '5'
  $6F29 IN A,($FE)    ; }
  $6F2B BIT 2,A       ; Was '3' pressed?
  $6F2D JR Z,$6F3D    ; Jump forward if so
- $6F2F LD A,$FE      ; { Read CAPS - 'V' 
+ $6F2F LD A,$FE      ; {Read CAPS - 'V'
  $6F31 IN A,($FE)    ; }
  $6F33 BIT 1,A       ; Was 'Z' pressed?
  $6F35 JR Z,$6F3D    ; Jump forward if so
- $6F37 LD A,E        ; Read { '0' - '6' 
+ $6F37 LD A,E        ; Read { '0' - '6'
  $6F38 IN A,($FE)    ; }
  $6F3A BIT 2,A       ; Was '8' pressed?
  $6F3C RET NZ        ; Return if not
@@ -2642,51 +2696,52 @@ c$6E4A LD BC,$04F7   ;
 ; Run the intro screen
 ;
 ; Used by the routine at #R$601C.
-c$6F40 XOR A         ;
- $6F41 LD ($5EB8),A  ;
+c$6F40 XOR A         ; Set #REGa to zero to clear some flags
+ $6F41 LD ($5EB8),A  ; Clear demo mode flag (#R$5EB8)
  $6F44 LD ($5EB9),A  ;
  $6F47 LD A,$3F      ;
  $6F49 LD ($5C8D),A  ;
- $6F4C LD B,$18      ; { Clear #N$18 lines of the display.
+ $6F4C LD B,$18      ; {Clear #N$18 lines of the display.
  $6F4E CALL $0E44    ; }
- $6F51 LD A,$8C      ; { Set the timer to #N$8C ticks
+ $6F51 LD A,$8C      ; {Set the timer to #N$8C ticks
  $6F53 LD ($5E70),A  ; }
- $6F56 LD DE,$4040   ; { Print the top line of text
+ $6F56 LD DE,$4040   ; {Print the top line of text
  $6F59 LD HL,$5B27   ;
  $6F5C LD C,$10      ;
  $6F5E CALL $6FD0    ; }
- $6F61 LD DE,$4825   ; { Print the middle line of text
+ $6F61 LD DE,$4825   ; {Print the middle line of text
  $6F64 LD HL,$5B77   ;
- $6F67 LD C,$0B      ; 
+ $6F67 LD C,$0B      ;
  $6F69 CALL $6FD0    ; }
- $6F6C LD DE,$5002   ; { Print the bottom line of text
+ $6F6C LD DE,$5002   ; {Print the bottom line of text
  $6F6F LD HL,$5BAE   ;
  $6F72 LD C,$0E      ;
  $6F74 CALL $6FD0    ; }
 *$6F77 LD DE,$6B7C   ; Print a string starting at #R$6B7C
  $6F7A LD BC,$0027   ; Print #N$27 characters
  $6F7D CALL $203C    ; Print the string
- $6F80 LD HL,$5E9E   ; { Put the current fill attribute in #REGa
+ $6F80 LD HL,$5E9E   ; {Put the current fill attribute in #REGa
  $6F83 LD A,(HL)     ; }
- $6F84 INC A         ; { Move it to the next one, and keep only the INK colour
+ $6F84 INC A         ; {Move it to the next one, and keep only the INK colour
  $6F85 AND $07       ;
  $6F87 LD (HL),A     ; }
  $6F88 ADD A,$38     ; Set white PAPER
- $6F8A LD HL,$5840   ; { Fill the centre attributes with this
+ $6F8A LD HL,$5840   ; {Fill the centre attributes with this
  $6F8D LD DE,$5841   ;
  $6F90 LD BC,$025F   ;
  $6F93 LD (HL),A     ;
  $6F94 LDIR          ; }
  $6F96 CALL $700E    ; Advance the scrolling message by one character
  $6F99 CALL $701C    ; Make a sound effect
- $6F9C XOR A         ; { Read the keyboard
+ $6F9C XOR A         ; {Read the keyboard
  $6F9D IN A,($FE)    ; }
  $6F9F AND $1F       ; Keep only the bottom 5 bits; the others are undefined
  $6FA1 CP $1F        ; Was a key pressed?
  $6FA3 JR NZ,$6FAF   ; Jump forward if so
- $6FA5 LD HL,$5E70   ; { Otherwise decrement the timer on the title screen
+ $6FA5 LD HL,$5E70   ; {Otherwise decrement the timer on the title screen
  $6FA8 DEC (HL)      ; }
- $6FA9 JR NZ,$6F77   ; Jump back to run another frame of the title screen if there is time
+ $6FA9 JR NZ,$6F77   ; Jump back to run another frame of the title screen if
+                     ; there is time
  $6FAB LD HL,$5EB8   ;
  $6FAE INC (HL)      ;
 *$6FAF LD HL,$5CD5   ;
@@ -2757,12 +2812,12 @@ c$6FD0 LD B,$05      ;
 ; Advance the title scrolling message
 ;
 ; Used by the routine at #R$6F40.
-c$700E LD DE,$6B85   ; { Put the first character in #REGa.
+c$700E LD DE,$6B85   ; {Put the first character in #REGa.
  $7011 LD A,(DE)     ; }
- $7012 LD HL,$6B86   ; { Advance all other characters by one.
+ $7012 LD HL,$6B86   ; {Advance all other characters by one.
  $7015 LD BC,$003A   ;
  $7018 LDIR          ; }
- $701A LD (DE),A     ; { Add the first character on the end and return.
+ $701A LD (DE),A     ; {Add the first character on the end and return.
  $701B RET           ; }
 
 ; Play a sound effect on the title screen
@@ -2800,7 +2855,7 @@ c$703F LD A,$19      ;
  $7047 LD A,B        ;
  $7048 LD ($5E9E),A  ;
 ; This entry point is used by the routine at #R$7904.
-*$704B LD HL,$1000   ; { Pause for #N$1000 ticks
+*$704B LD HL,$1000   ; {Pause for #N$1000 ticks
  $704E LD ($5E97),HL ; }
  $7051 LD HL,$5800   ; Point #REGhl at the attribute buffer
  $7054 LD DE,$0020   ; Set #REGde for the length of one line
@@ -2850,7 +2905,7 @@ c$703F LD A,$19      ;
  $7094 ADD HL,DE     ;
  $7095 INC HL        ;
  $7096 LD B,A        ;
- $7097 PUSH BC       ; { Pause
+ $7097 PUSH BC       ; {Pause
  $7098 CALL $6E1B    ;
  $709B POP BC        ; }
  $709C LD A,B        ;
@@ -2875,10 +2930,10 @@ c$70AB XOR A         ;
  $70B9 LD HL,$03E8   ;
  $70BC LD ($5EA5),HL ;
  $70BF LD HL,$0400   ;
- $70C2 LD A,($5EB8)  ;
- $70C5 AND A         ;
+ $70C2 LD A,($5EB8)  ; {Is the game in demo mode?
+ $70C5 AND A         ; }
  $70C6 JR Z,$70CB    ;
- $70C8 LD HL,$0B00   ; { Set to pause for #N$B00 ticks
+ $70C8 LD HL,$0B00   ; {Set to pause for #N$B00 ticks
 *$70CB LD ($5E97),HL ; }
  $70CE CALL $6BC0    ; Initialize display
  $70D1 CALL $70D5    ; Draw background
@@ -2887,22 +2942,22 @@ c$70AB XOR A         ;
 ; Draw the traffic screen background
 ;
 ; Used by the routine at #R$70AB.
-c$70D5 LD HL,$5820   ; { Make lines 1 - 2 black on white
+c$70D5 LD HL,$5820   ; {Make lines 1 - 2 black on white
  $70D8 LD DE,$5821   ;
  $70DB LD BC,$003F   ;
  $70DE LD (HL),$38   ;
  $70E0 LDIR          ; }
- $70E2 INC HL        ; { Clear the next 17 lines
+ $70E2 INC HL        ; {Clear the next 17 lines
  $70E3 INC DE        ;
  $70E4 LD BC,$021F   ;
  $70E7 LD (HL),$00   ;
  $70E9 LDIR          ; }
- $70EB INC HL        ; { Make the next 4 lines blue on white
+ $70EB INC HL        ; {Make the next 4 lines blue on white
  $70EC INC DE        ;
  $70ED LD C,$7F      ;
  $70EF LD (HL),$39   ;
  $70F1 LDIR          ; }
- $70F3 LD HL,$5960   ; { Make line 11 black on white
+ $70F3 LD HL,$5960   ; {Make line 11 black on white
  $70F6 LD DE,$5961   ;
  $70F9 LD C,$1F      ;
  $70FB LD (HL),$38   ;
@@ -2918,21 +2973,22 @@ c$70D5 LD HL,$5820   ; { Make lines 1 - 2 black on white
  $710B DJNZ $7109    ; Loop until all rows drawn
  $710D POP HL        ; Restore #REGhl to the start of the line
  $710E INC HL        ; Move to the next column
- $710F DEC C         ; { Loop until all columns drawn 
+ $710F DEC C         ; {Loop until all columns drawn
  $7110 JR NZ,$7106   ; }
 ; Draw a dotted line in the middle of the central reservation
  $7112 LD HL,$4B60   ; Set #REGhl to the start of the first line
  $7115 LD DE,$4C60   ; Set #REGde to the start of the second line
  $7118 LD A,$C3      ; Set #REGa to 11000011
  $711A LD B,$20      ; #N$20 columns per line
-*$711C LD (HL),A     ; { Set the bit pattern
+*$711C LD (HL),A     ; {Set the bit pattern
  $711D LD (DE),A     ; }
- $711E INC HL        ; { Move to the next column
+ $711E INC HL        ; {Move to the next column
  $711F INC DE        ; }
  $7120 DJNZ $711C    ; Loop until all columns are drawn
 ; Draw the ski hut.
 ; .
-; This entry point is used by the routine at #R$781B, after an ambulance picks up Horace.
+; This entry point is used by the routine at #R$781B, after an ambulance picks
+; up Horace.
 *$7122 LD DE,$65D2   ; Point #REGhl at the ski hut graphic (#R$65D2)
  $7125 LD HL,$50ED   ; Point #REGde at the screen location
  $7128 LD A,$03      ; Draw 3 rows
@@ -2948,13 +3004,13 @@ c$70D5 LD HL,$5820   ; { Make lines 1 - 2 black on white
  $7135 DJNZ $7131    ; Loop until all 8 bytes are copied
  $7137 POP HL        ; Restore screen location
  $7138 INC HL        ; Move to the next column
- $7139 DEC C         ; { Loop until all columns are drawn
+ $7139 DEC C         ; {Loop until all columns are drawn
  $713A JR NZ,$712E   ; }
  $713C POP HL        ; Restore screen location
- $713D LD BC,$FFE0   ; { Point to the next row up
+ $713D LD BC,$FFE0   ; {Point to the next row up
  $7140 ADD HL,BC     ; }
  $7141 EX AF,AF'     ; Restore row count
- $7142 DEC A         ; { Loop until all rows are drawn
+ $7142 DEC A         ; {Loop until all rows are drawn
  $7143 JR NZ,$712A   ;
  $7145 RET           ; }
 
@@ -2962,23 +3018,24 @@ c$70D5 LD HL,$5820   ; { Make lines 1 - 2 black on white
 ;
 ; Used by the routine at #R$6053.
 c$7146 LD HL,$5E86   ; Point #REGhl at the traffic tick counter (#R$5E86)
- $7149 LD A,($5EC0)  ; { Put the traffic count (#R$5EC0) in #REGb.
+ $7149 LD A,($5EC0)  ; {Put the traffic count (#R$5EC0) in #REGb.
  $714C LD B,A        ; }
- $714D XOR A         ; { Has the tick count reached 0?
+ $714D XOR A         ; {Has the tick count reached 0?
  $714E CP (HL)       ; }
  $714F JR Z,$7153    ; Jump forward if it has
- $7151 DEC (HL)      ; { Otherwise decrement the tick counter and return
+ $7151 DEC (HL)      ; {Otherwise decrement the tick counter and return
  $7152 RET           ; }
 ; Traffic should now be checked
-*$7153 LD HL,$5F14   ; Point #REGhl at the second line of traffic data (#R$5F07)
+*$7153 LD HL,$5F14   ; Point #REGhl at the second line of traffic data
+                     ; (#R$5F07)
  $7156 LD DE,$000D   ; #N$D bytes for each vehicle
 *$7159 CP (HL)       ; Is there traffic to check in this location?
  $715A JR NZ,$7160   ; Jump forward if there isn't.
- $715C CALL $7164    ; { Otherwise draw it and return
+ $715C CALL $7164    ; {Otherwise draw it and return
  $715F RET           ; }
 ; There is no traffic to check at this location, so try the next
 *$7160 ADD HL,DE     ; Move forward to the next position in the buffer
- $7161 DJNZ $7159    ; { Loop until all traffic is checked
+ $7161 DJNZ $7159    ; {Loop until all traffic is checked
  $7163 RET           ; }
 
 ; Generate traffic
@@ -2990,7 +3047,7 @@ c$7164 PUSH HL       ; Store #REGhl
  $7165 LD HL,$5EA4   ;
 *$7168 CALL $6DAD    ; Generate a random number
  $716B AND $07       ; Keep the top 7 bits
- $716D CP $06        ; { If the value is 6 or 7, generate another random number.
+ $716D CP $06        ; {If the value is 6 or 7, generate another random number.
  $716F JR NC,$7168   ; }
 ; #REGa now contains a random traffic ID between 0 and 5
  $7171 BIT 2,A       ; Is bit 2 set ie: a car?
@@ -3004,7 +3061,7 @@ c$7164 PUSH HL       ; Store #REGhl
  $7182 JR Z,$718A    ; Jump foward if so
  $7184 LD DE,$59DE   ;
  $7187 LD HL,$5A5E   ;
-*$718A ADD A,A       ; { Double #REGa to get a word offset and store it in #REGc
+*$718A ADD A,A       ; {Double #REGa to get a word offset and store it in #REGc
  $718B LD C,A        ; }
  $718C CALL $6DAD    ; Generate a random number
  $718F AND $01       ;
@@ -3029,11 +3086,11 @@ c$7164 PUSH HL       ; Store #REGhl
  $71A7 EX AF,AF'     ;
  $71A8 LD HL,$6676   ; Point #REGhl at the traffic definitions (#R$6676)
  $71AB ADD HL,BC     ; Add the offset to point at the right entry
- $71AC LD E,(HL)     ; { Store the pointer to the traffic data in #REGhl
+ $71AC LD E,(HL)     ; {Store the pointer to the traffic data in #REGhl
  $71AD INC HL        ;
  $71AE LD D,(HL)     ;
  $71AF EX DE,HL      ; }
- $71B0 POP DE        ; { Restore the pointer to the traffic buffer
+ $71B0 POP DE        ; {Restore the pointer to the traffic buffer
  $71B1 PUSH DE       ; }
  $71B2 LD BC,$000D   ; #N$D bytes to copy
  $71B5 LDIR          ; Copy it
@@ -3129,41 +3186,42 @@ c$71E6 LD DE,$5F07   ;
 c$7241 EXX           ; Swap the main registers.
  $7242 LD HL,$5F07   ; Point #REGhl at the vehicle data (#R$5F07)
  $7245 LD DE,$000D   ; Buffer is #N$D bytes long
- $7248 LD A,($5EC0)  ; { Set #REGb as a count of the number of vehicles (#R$5EC0) plus 1.
- $724B INC A         ; 
+ $7248 LD A,($5EC0)  ; {Set #REGb as a count of the number of vehicles
+ $724B INC A         ; (#R$5EC0) plus 1.
  $724C LD B,A        ; }
 ; Loop through each vehicle
-*$724D PUSH HL       ; { Swap main registers, but keep the pointer to the ambulance buffer
- $724E EXX           ; 
+*$724D PUSH HL       ; {Swap main registers, but keep the pointer to the
+ $724E EXX           ; ambulance buffer
  $724F POP HL        ; }
  $7250 LD A,(HL)     ; Get the first byte in the buffer
- $7251 AND A         ; { If it's zero, no work to do, so ignore this.
+ $7251 AND A         ; {If it's zero, no work to do, so ignore this.
  $7252 JP Z,$7381    ; }
 ; This vehicle needs its tick count updated
  $7255 INC HL        ; Move to the next item in the buffer
  $7256 DEC (HL)      ; Decrement the tick count
- $7257 JP NZ,$7381   ; If the tick count isn't zero, no work to do, so ignore this.
+ $7257 JP NZ,$7381   ; If the tick count isn't zero, no work to do, so ignore
+                     ; this.
 ; The vehicle's tick count is zero
  $725A INC HL        ; Move to the next entry in the buffer
- $725B LD A,(HL)     ; { Store the direction (#R$5E83)
+ $725B LD A,(HL)     ; {Store the direction (#R$5E83)
  $725C LD ($5E83),A  ; }
  $725F INC HL        ; Move to the next entry in the buffer
- $7260 LD A,(HL)     ; { Store this ??? (#R$5EA3)
+ $7260 LD A,(HL)     ; {Store this ??? (#R$5EA3)
  $7261 LD ($5EA3),A  ; }
  $7264 INC HL        ; Move to the next entry in the buffer
  $7265 LD ($5E84),HL ; Store the current position (#R$5E84)
 ; Calculate the next screen address
- $7268 LD E,(HL)     ; { Put the screen address in #REGde.
+ $7268 LD E,(HL)     ; {Put the screen address in #REGde.
  $7269 INC HL        ;
  $726A LD D,(HL)     ; }
  $726B LD A,E        ; Get the x co-ordinate
  $726C LD ($5EA2),A  ; Store this (#R$5EA2)
- $726F LD BC,$0005   ; { Skip forward 5 bytes 
+ $726F LD BC,$0005   ; {Skip forward 5 bytes
  $7272 ADD HL,BC     ; }
- $7273 LD A,(HL)     ; { Store the vehicle height (#R$5E75)
+ $7273 LD A,(HL)     ; {Store the vehicle height (#R$5E75)
  $7274 LD ($5E75),A  ; }
  $7277 INC HL        ; Move to the next entry in the buffer
- $7278 LD A,(HL)     ; { Store the vehicle width (#R$5E74)
+ $7278 LD A,(HL)     ; {Store the vehicle width (#R$5E74)
  $7279 LD ($5E74),A  ; }
  $727C INC HL        ; Move to the next entry in the buffer
  $727D LD ($5EA0),HL ; Store this (#R$5EA0)
@@ -3174,16 +3232,16 @@ c$7241 EXX           ; Swap the main registers.
  $7287 LD C,A        ; Store this in #REGc
  $7288 AND A         ; Is the direction right?
  $7289 JR Z,$728F    ; Jump forward if so
- $728B DEC HL        ; { Otherwise, skip back to the previous address on screen
+ $728B DEC HL        ; {Otherwise, skip back to the previous address on screen
  $728C DEC HL        ; and set the move back 7 rows
  $728D LD E,$F9      ; }
 *$728F BIT 0,H       ; Is the vehicle at an even row address?
  $7291 JR Z,$7296    ; Jump forward if so
- $7293 LD A,H        ; { Otherwise move the required number of rows
+ $7293 LD A,H        ; {Otherwise move the required number of rows
  $7294 ADD A,E       ;
  $7295 LD H,A        ; }
 *$7296 LD ($5E81),HL ; Set the next screen address to draw at (#R$5E81)
- $7299 LD A,L        ; { Set #REGa to the current screen column
+ $7299 LD A,L        ; {Set #REGa to the current screen column
  $729A AND $1F       ; }
  $729C LD A,($5EA3)  ;
  $729F JR NZ,$72A7   ;
@@ -3195,7 +3253,7 @@ c$7241 EXX           ; Swap the main registers.
  $72A9 AND A         ; Is the direction right?
  $72AA JR NZ,$72B7   ; Jump forward if not
 ; Handle a left facing vehicle
- $72AC LD A,L        ; { Set #REGa to the current screen address column
+ $72AC LD A,L        ; {Set #REGa to the current screen address column
  $72AD AND $1F       ; }
  $72AF JR NZ,$72CD   ; Jump forward if it is not to the far left
  $72B1 LD A,B        ;
@@ -3204,10 +3262,10 @@ c$7241 EXX           ; Swap the main registers.
  $72B5 JR $72CD      ;
 ; Handle a right facing vehicle
 *$72B7 LD A,($5E74)  ; Set #REGa to the x co-ordinate
- $72BA LD E,A        ; { Put this in #REGde
+ $72BA LD E,A        ; {Put this in #REGde
  $72BB LD D,$00      ; }
  $72BD ADD HL,DE     ; Add this as an offset to the screen address
- $72BE LD A,L        ; { Set #REGa to the current screen address column
+ $72BE LD A,L        ; {Set #REGa to the current screen address column
  $72BF AND $1F       ; }
  $72C1 JR NZ,$72CD   ;
  $72C3 LD A,B        ;
@@ -3252,7 +3310,7 @@ c$7241 EXX           ; Swap the main registers.
 *$72FC AND A         ;
  $72FD JR Z,$7353    ;
 ; Handle the vehicle's attributes
-*$72FF LD A,H        ; { Convert this screen address to an attribute address
+*$72FF LD A,H        ; {Convert this screen address to an attribute address
  $7300 AND $18       ;
  $7302 SRA A         ;
  $7304 SRA A         ;
@@ -3260,7 +3318,7 @@ c$7241 EXX           ; Swap the main registers.
  $7308 ADD A,$58     ;
  $730A LD H,A        ; }
  $730B LD BC,$FFE0   ; Move up a row for each iteration
- $730E XOR A         ; { Set the currently scanned attribute to black
+ $730E XOR A         ; {Set the currently scanned attribute to black
  $730F LD ($5E9F),A  ; }
  $7312 LD A,($5E75)  ; Get the vehicle's height
 *$7315 EX AF,AF'     ; Swap #REGaf to remember this
@@ -3269,13 +3327,13 @@ c$7241 EXX           ; Swap the main registers.
  $7319 JR Z,$7329    ; Jump forward if it is black
  $731B CP $04        ; Is the INK green? (Only used for Horace)
  $731D JR NZ,$7326   ; Jump forward if it isn't
- $731F LD A,$01      ; { Signal that Horace has been hit by a vehicle
- $7321 LD ($5E8E),A  ; and skip forward
+ $731F LD A,$01      ; {Signal that Horace has been hit by a vehicle and skip
+ $7321 LD ($5E8E),A  ; forward
  $7324 JR $7329      ; }
 *$7326 LD ($5E9F),A  ; Store this attribute (#R$5E9F)
 *$7329 ADD HL,BC     ; Move up a row
  $732A EX AF,AF'     ; Restore the number of rows in #REGa
- $732B DEC A         ; { Loop until all rows are drawn
+ $732B DEC A         ; {Loop until all rows are drawn
  $732C JR NZ,$7315   ; }
  $732E LD A,($5E9F)  ; Get the currently scanned attribute
  $7331 AND A         ; Set the zero flag if it is black
@@ -3303,38 +3361,41 @@ c$7241 EXX           ; Swap the main registers.
 *$7358 LD A,(HL)     ;
  $7359 AND A         ;
  $735A CALL NZ,$7389 ;
- $735D LD A,($5E8E)  ; { Has Horace collided with a vehicle?
+ $735D LD A,($5E8E)  ; {Has Horace collided with a vehicle?
  $7360 AND A         ; }
  $7361 CALL NZ,$76AD ; Call ?? if he has
  $7364 CALL $7402    ;
- $7367 LD A,($5E8E)  ; { Has Horace collided with a vehicle?
+ $7367 LD A,($5E8E)  ; {Has Horace collided with a vehicle?
  $736A AND A         ; }
  $736B JR Z,$7381    ; If not, jump forward to check other vehicles.
- $736D EXX           ; { Store main registers.
+ $736D EXX           ; {Store main registers.
  $736E PUSH HL       ;
  $736F PUSH DE       ;
  $7370 PUSH BC       ;
  $7371 EXX           ; }
  $7372 CALL $7706    ; Check for collision
  $7375 CALL $769C    ; Draw the sprite
- $7378 EXX           ; { Restore main registers.
+ $7378 EXX           ; {Restore main registers.
  $7379 POP BC        ;
  $737A POP DE        ;
  $737B POP HL        ;
  $737C EXX           ; }
  $737D XOR A         ;
  $737E LD ($5E8E),A  ;
-; This vehicle has been updated (or there isn't work to do), so move to the next one.
+; This vehicle has been updated (or there isn't work to do), so move to the
+; next one.
 *$7381 EXX           ; Swap back the main entries
  $7382 ADD HL,DE     ; Move to the next buffer entry
- $7383 DEC B         ; { Loop while there are more vehicles to look at
+ $7383 DEC B         ; {Loop while there are more vehicles to look at
  $7384 JP NZ,$724D   ; }
- $7387 EXX           ; { Restore the main registers and return.
+ $7387 EXX           ; {Restore the main registers and return.
  $7388 RET           ; }
 
 ; Routine at 7389
 ;
 ; Used by the routine at #R$7241.
+;
+; A
 c$7389 LD C,A        ;
  $738A LD DE,$0020   ;
  $738D BIT 7,A       ;
@@ -3408,23 +3469,23 @@ c$7389 LD C,A        ;
 c$7402 LD DE,($5E81) ; Put the next screen address in #REGde
  $7406 LD HL,($5E84) ; Put the movement buffer in #REGhl
  $7409 DEC HL        ; Move back one position in the buffer
- $740A LD A,($5EA3)  ; { Store the direction
+ $740A LD A,($5EA3)  ; {Store the direction
  $740D LD (HL),A     ; }
- $740E INC HL        ; { Store the screen address
+ $740E INC HL        ; {Store the screen address
  $740F LD (HL),E     ;
  $7410 INC HL        ;
  $7411 LD (HL),D     ; }
- $7412 INC HL        ; { Put the movement buffer in #REGhl
+ $7412 INC HL        ; {Put the movement buffer in #REGhl
  $7413 LD E,(HL)     ;
  $7414 INC HL        ;
  $7415 LD D,(HL)     ; }
- $7416 INC HL        ; { Put the sprite buffer in #REGbc
+ $7416 INC HL        ; {Put the sprite buffer in #REGbc
  $7417 LD C,(HL)     ;
  $7418 INC HL        ;
  $7419 LD B,(HL)     ; }
  $741A LD ($5E7F),BC ; Store this
  $741E LD HL,($5E81) ; Get the next screen address to use (#R$5E81)
- $7421 CALL $74A2    ;
+ $7421 CALL $74A2    ; Update movement flags
  $7424 LD A,($5E75)  ;
  $7427 EX AF,AF'     ;
 *$7428 PUSH DE       ;
@@ -3511,29 +3572,34 @@ c$7402 LD DE,($5E81) ; Put the next screen address in #REGde
  $749F JR NZ,$7481   ;
  $74A1 RET           ;
 
-; Routine at 74A2
+; Update movement flags
 ;
 ; Used by the routine at #R$7402.
-c$74A2 PUSH HL       ;
- $74A3 EX AF,AF'     ;
- $74A4 LD H,$1F      ;
- $74A6 LD A,H        ;
+;
+; HL Current screen address
+; A Current direction
+c$74A2 PUSH HL       ; Store #REGhl
+ $74A3 EX AF,AF'     ; Remember #REGa
+ $74A4 LD H,$1F      ; Set #REGh with all bits in a column index
+ $74A6 LD A,H        ; {Merge the row and column bits together in #REGl
  $74A7 AND L         ;
- $74A8 LD L,A        ;
- $74A9 LD A,H        ;
- $74AA SUB L         ;
- $74AB INC A         ;
- $74AC AND H         ;
- $74AD LD L,A        ;
- $74AE EX AF,AF'     ;
- $74AF AND A         ;
- $74B0 LD A,($5E74)  ;
- $74B3 JR NZ,$74BF   ;
+ $74A8 LD L,A        ; }
+ $74A9 LD A,H        ; Get the column index
+ $74AA SUB L         ; {Subtract the bitmask and add 1
+ $74AB INC A         ; }
+ $74AC AND H         ; {Merge this with the row bits and store in #REGl.
+ $74AD LD L,A        ; }
+ $74AE EX AF,AF'     ; Restore #REGa
+ $74AF AND A         ; Is the direction right?
+ $74B0 LD A,($5E74)  ; Get the vehicle width
+ $74B3 JR NZ,$74BF   ; Jump forward if direction is left
+; Handle right facing
  $74B5 SUB L         ;
  $74B6 LD ($5E77),A  ;
  $74B9 LD A,L        ;
  $74BA LD ($5E76),A  ;
  $74BD JR $74D0      ;
+; Handle left facing
 *$74BF CP L          ;
  $74C0 JR C,$74C9    ;
  $74C2 LD A,L        ;
@@ -3543,23 +3609,24 @@ c$74A2 PUSH HL       ;
 *$74C9 LD ($5E77),A  ;
  $74CC XOR A         ;
  $74CD LD ($5E76),A  ;
-*$74D0 POP HL        ;
- $74D1 PUSH HL       ;
- $74D2 LD A,H        ;
+; Calculate the attribute address
+*$74D0 POP HL        ; {Restore the screen address
+ $74D1 PUSH HL       ; }
+ $74D2 LD A,H        ; {Convert this into an attribute address
  $74D3 AND $18       ;
  $74D5 SRA A         ;
  $74D7 SRA A         ;
  $74D9 SRA A         ;
  $74DB ADD A,$58     ;
- $74DD LD H,A        ;
- $74DE LD ($5E78),HL ;
- $74E1 POP HL        ;
- $74E2 RET           ;
+ $74DD LD H,A        ; }
+ $74DE LD ($5E78),HL ; Store it (#R$5E78)
+ $74E1 POP HL        ; {Restore #REGhl and return
+ $74E2 RET           ; }
 
-; Update Horace
+; Update Horace on the traffic screen
 ;
 ; Used by the routine at #R$6053.
-c$74E3 LD A,($5E8D)  ; { Has Horace hit a vehicle?
+c$74E3 LD A,($5E8D)  ; {Has Horace hit a vehicle?
  $74E6 AND A         ; }
  $74E7 JR NZ,$752E   ; Jump forward if so
  $74E9 LD ($5E73),A  ;
@@ -3573,11 +3640,11 @@ c$74E3 LD A,($5E8D)  ; { Has Horace hit a vehicle?
  $74FC AND A         ;
  $74FD RET NZ        ;
  $74FE CALL $7559    ;
-*$7501 LD HL,$5EFE   ; { Decrement the tick count
+*$7501 LD HL,$5EFE   ; {Decrement the tick count
  $7504 DEC (HL)      ; }
  $7505 RET NZ        ; Return if it isn't zero?
 ; The tick count has reached zero
- $7506 LD A,$03      ; { Reset it back to 3
+ $7506 LD A,$03      ; {Reset it back to 3
  $7508 LD (HL),A     ; }
  $7509 CALL $75B5    ; Update based on the keyboard input
  $750C LD A,($5E73)  ;
@@ -3594,26 +3661,26 @@ c$74E3 LD A,($5E8D)  ; { Has Horace hit a vehicle?
  $7522 SBC HL,DE     ;
  $7524 JR NC,$7529   ;
 *$7526 LD ($5E73),A  ;
-*$7529 LD A,($5E8D)  ; { Has Horace hit a vehicle?
+*$7529 LD A,($5E8D)  ; {Has Horace hit a vehicle?
  $752C AND A         ; }
  $752D RET Z         ; Return if not
-*$752E CALL $781B    ; { Horace was run over. Call the ambulance and pay it.
+*$752E CALL $781B    ; {Horace was run over. Call the ambulance and pay it.
  $7531 RET           ; }
 
 ; Give Horace the skis if he's by the hut
 ;
 ; Used by the routine at #R$74E3.
 c$7532 LD HL,($5F00) ; Put the current position in #REGhl.
- $7535 LD DE,$50ED   ; { Is it the location of the ski hut?
+ $7535 LD DE,$50ED   ; {Is it the location of the ski hut?
  $7538 XOR A         ;
  $7539 SBC HL,DE     ; }
  $753B RET NZ        ; Return if it isn't
  $753C LD ($5EFD),A  ;
  $753F DEC A         ;
  $7540 LD ($5EBC),A  ;
- $7543 LD A,$01      ; { Set message ID to 1
- $7545 LD ($5EB5),A  ; SKI HIRE $10 }
- $7548 LD HL,$5EBF   ; { Decrement $10 
+ $7543 LD A,$01      ; {Set message ID to 1 SKI HIRE $10
+ $7545 LD ($5EB5),A  ; }
+ $7548 LD HL,$5EBF   ; {Decrement $10
  $754B DEC (HL)      ; }
  $754C LD HL,$03E8   ;
  $754F LD ($5EA5),HL ;
@@ -3645,9 +3712,9 @@ c$7559 LD HL,$5EB8   ;
  $757C LD A,($5EBC)  ;
  $757F AND A         ;
  $7580 JR Z,$7585    ;
- $7582 LD HL,$666C   ; { Copy the default data into the graphics buffer entries
+ $7582 LD HL,$666C   ; {Copy the default data into the graphics buffer entries
 *$7585 LD DE,$5EFD   ;
- $7588 LD BC,$000A   ; 
+ $7588 LD BC,$000A   ;
  $758B LDIR          ; }
  $758D LD HL,($5F00) ;
  $7590 LD ($5E89),HL ;
@@ -3673,7 +3740,7 @@ c$7559 LD HL,$5EB8   ;
 ;
 ; Used by the routine at #R$74E3.
 c$75B5 CALL $6E4A    ; Get keyboard input
- $75B8 LD HL,$5EFF   ; Point #REGhl at the current direction
+ $75B8 LD HL,$5EFF   ; Point #REGhl at the current direction (#R$5EFF)
  $75BB LD A,B        ; Put the planned input state in #REGa
  $75BC CP $04        ; Is it 4 (no input?)
  $75BE JR Z,$75C7    ; Jump forward if so
@@ -3805,9 +3872,9 @@ c$75B5 CALL $6E4A    ; Get keyboard input
 ; Used by the routines at #R$7241 and #R$75B5.
 c$769C LD HL,($5F00) ; Put the screen address in #REGhl
  $769F LD DE,($5F02) ; Put the sprite address in #REGde
- $76A3 LD A,($5F04)  ; { Set the current attribute
+ $76A3 LD A,($5F04)  ; {Set the current attribute
  $76A6 LD ($5E7A),A  ; }
- $76A9 CALL $6C20    ; { Draw it
+ $76A9 CALL $6C20    ; {Draw it
  $76AC RET           ; }
 
 ; Erase Horace's sprite after moving
@@ -3940,7 +4007,7 @@ c$7706 LD DE,$5EC7   ;
 *$776A LD A,(DE)     ; Get the next graphic from the buffer
  $776B AND (HL)      ; Is there anything at this screen address?
  $776C JR Z,$7773    ; Jump forward if not
- $776E LD A,$01      ; { Signal that Horace was run over
+ $776E LD A,$01      ; {Signal that Horace was run over
  $7770 LD ($5E8D),A  ; }
 *$7773 INC DE        ; Point #REGde to the next buffer address
  $7774 INC H         ; Move forward a row
@@ -3986,7 +4053,7 @@ c$7706 LD DE,$5EC7   ;
 ; Routine at 77AC
 ;
 ; Used by the routine at #R$6053.
-c$77AC LD A,($5EFD)  ;
+c$77AC LD A,($5EFD)  ; (#R$5EFD)
  $77AF AND A         ;
  $77B0 RET Z         ;
  $77B1 LD HL,$5E96   ;
@@ -4022,7 +4089,7 @@ c$77AC LD A,($5EFD)  ;
 ; Calculate and store Horace's next sprite address
 ;
 ; Used by the routines at #R$75B5 and #R$77AC.
-c$77ED LD A,($5E95)  ; { Flip the frame counter between 0 and 1
+c$77ED LD A,($5E95)  ; {Flip the frame counter between 0 and 1
  $77F0 INC A         ;
  $77F1 AND $01       ;
  $77F3 LD ($5E95),A  ; }
@@ -4037,11 +4104,11 @@ c$77ED LD A,($5E95)  ; { Flip the frame counter between 0 and 1
  $7808 JR Z,$780B    ;
  $780A EX DE,HL      ;
 *$780B LD A,($5EFF)  ; Put the current direction in #REGa
- $780E ADD A,A       ; { Double it to get a word offset and store in #REGde
+ $780E ADD A,A       ; {Double it to get a word offset and store in #REGde
  $780F LD D,$00      ;
  $7811 LD E,A        ; }
  $7812 ADD HL,DE     ; Add the base address of the sprite table
- $7813 LD E,(HL)     ; { Get the sprite address to draw and store it in #R$5F02
+ $7813 LD E,(HL)     ; {Get the sprite address to draw and store it in #R$5F02
  $7814 INC HL        ;
  $7815 LD D,(HL)     ;
  $7816 LD ($5F02),DE ; }
@@ -4053,9 +4120,9 @@ c$77ED LD A,($5E95)  ; { Flip the frame counter between 0 and 1
 c$781B XOR A         ; Set #REGa to 0 to reset some flags
  $781C LD ($5E8D),A  ; Reset Horace's state to normal
  $781F LD ($5EFD),A  ;
- $7822 LD A,$02      ; { Set the next string to 2
- $7824 LD ($5EB5),A  ; AMBULANCE FEE $10 } 
- $7827 LD HL,$5EBF   ; { Decrement $10
+ $7822 LD A,$02      ; {Set the next string to 2 AMBULANCE FEE $10
+ $7824 LD ($5EB5),A  ; }
+ $7827 LD HL,$5EBF   ; {Decrement $10
  $782A DEC (HL)      ; }
  $782B CALL $7F1F    ; Print the message
  $782E CALL $6C8B    ; Flash Horace red and play a sound effect
@@ -4067,25 +4134,26 @@ c$781B XOR A         ; Set #REGa to 0 to reset some flags
 ; Run the ambulance across the screen after Horace has been run over
 ;
 ; Used by the routine at #R$781B.
-c$783B LD HL,$5AA0   ; { Fill the bottom three lines with white on white
+c$783B LD HL,$5AA0   ; {Fill the bottom three lines with white on white
  $783E LD DE,$5AA1   ;
  $7841 LD (HL),$3F   ;
  $7843 LD BC,$005F   ;
  $7846 LDIR          ; }
- $7848 LD HL,$66E3   ;
- $784B LD DE,$5FE7   ;
+ $7848 LD HL,$66E3   ; {Copy the right facing ambulance definition (#R$66E3) to
+ $784B LD DE,$5FE7   ; the working buffer (#R$5FE7)
  $784E LD BC,$000D   ;
- $7851 LDIR          ;
- $7853 LD HL,$50DB   ;
- $7856 LD ($5FEB),HL ;
- $7859 LD HL,$66F6   ;
- $785C LD ($5FEF),HL ;
- $785F LD A,$02      ;
- $7861 LD ($5E75),A  ;
- $7864 LD A,$06      ;
- $7866 LD ($5E74),A  ;
- $7869 LD HL,$5FEB   ;
- $786C LD ($5E84),HL ;
+ $7851 LDIR          ; }
+ $7853 LD HL,$50DB   ; {Set the initial screen address to #N$50DB
+ $7856 LD ($5FEB),HL ; }
+ $7859 LD HL,$66F6   ; {Set the sprite data to #R$66F6
+ $785C LD ($5FEF),HL ; }
+ $785F LD A,$02      ; {Set the height to 2
+ $7861 LD ($5E75),A  ; }
+ $7864 LD A,$06      ; {Set the width to 6
+ $7866 LD ($5E74),A  ; }
+ $7869 LD HL,$5FEB   ; {Set the pointer to the movement data
+ $786C LD ($5E84),HL ; }
+; Update the ambulance
 *$786F LD HL,($5FEB) ;
  $7872 INC HL        ;
  $7873 LD ($5E81),HL ;
@@ -4105,11 +4173,11 @@ c$783B LD HL,$5AA0   ; { Fill the bottom three lines with white on white
  $7890 LD A,B        ;
  $7891 AND A         ;
  $7892 JR Z,$78A2    ;
-*$7894 CALL $7402    ;
- $7897 CALL $6DFC    ;
- $789A LD BC,$0BEC   ;
- $789D CALL $6E1F    ;
- $78A0 JR $786F      ;
+*$7894 CALL $7402    ; Move the vehicle
+ $7897 CALL $6DFC    ; Sound the ambulance siren
+ $789A LD BC,$0BEC   ; {Pause
+ $789D CALL $6E1F    ; }
+ $78A0 JR $786F      ; Loop back to update the ambulance
 *$78A2 LD HL,$5AA0   ;
  $78A5 LD DE,$5AA1   ;
  $78A8 LD (HL),$39   ;
@@ -4123,8 +4191,8 @@ c$783B LD HL,$5AA0   ; { Fill the bottom three lines with white on white
 ;
 ; Used by the routine at #R$601C.
 c$78B4 CALL $7904    ; Fill the screen with colours
- $78B7 CALL $792A    ;
- $78BA CALL $794E    ;
+ $78B7 CALL $792A    ; Initialize the screen
+ $78BA CALL $794E    ; Set up the initial state
 *$78BD LD HL,($5E99) ;
  $78C0 LD ($5E97),HL ;
  $78C3 LD HL,$5EA7   ;
@@ -4133,21 +4201,21 @@ c$78B4 CALL $7904    ; Fill the screen with colours
  $78C9 LD (HL),$02   ;
  $78CB CALL $79B0    ;
  $78CE CALL $7ABA    ;
- $78D1 CALL $7C54    ;
+ $78D1 CALL $7C54    ; Update Horace skiing
  $78D4 JR $78D9      ;
-*$78D6 CALL $6E1B    ; { Pause twice
+*$78D6 CALL $6E1B    ; {Pause twice
 *$78D9 CALL $6E1B    ; }
- $78DC LD A,($5EB8)  ;
- $78DF AND A         ;
- $78E0 JR NZ,$78E8   ;
- $78E2 CALL $6CDD    ;
- $78E5 CALL $6D6B    ;
-*$78E8 LD A,($5EB9)  ;
- $78EB AND A         ;
- $78EC RET NZ        ;
- $78ED LD A,($5EB4)  ;
- $78F0 AND A         ;
- $78F1 CALL NZ,$7E8D ;
+ $78DC LD A,($5EB8)  ; {Is the game in demo mode?
+ $78DF AND A         ; }
+ $78E0 JR NZ,$78E8   ; If so, don't print the score
+ $78E2 CALL $6CDD    ; Update the score
+ $78E5 CALL $6D6B    ; Print the score
+*$78E8 LD A,($5EB9)  ; {Is the game over?
+ $78EB AND A         ; }
+ $78EC RET NZ        ; If so, return
+ $78ED LD A,($5EB4)  ; {Is the finish gate in view?
+ $78F0 AND A         ; }
+ $78F1 CALL NZ,$7E8D ; If so, draw it
  $78F4 CALL $7F1F    ; Print a message (if any)
  $78F7 LD A,($5E9C)  ;
  $78FA AND A         ;
@@ -4189,26 +4257,26 @@ c$792A CALL $6BC0    ;
  $7938 LD ($5EA7),A  ;
  $793B LD A,$16      ;
  $793D LD ($5EAE),A  ;
- $7940 LD HL,$5820   ; { Fill all the lines below the top one
- $7943 LD DE,$5821   ; with white on white.
+ $7940 LD HL,$5820   ; {Fill all the lines below the top one with white on
+ $7943 LD DE,$5821   ; white.
  $7946 LD (HL),$3F   ;
  $7948 LD BC,$02DF   ;
  $794B LDIR          ; }
  $794D RET           ; Return
 
-; Routine at 794E
+; Initialize skiing screen
 ;
 ; Used by the routine at #R$78B4.
-c$794E LD HL,$0900   ;
- $7951 LD ($5EAC),HL ;
- $7954 LD A,($5EBE)  ; { Has Horace run out of money? 
+c$794E LD HL,$0900   ; {Initialize the distance travelled (#R$5EAC)
+ $7951 LD ($5EAC),HL ; }
+ $7954 LD A,($5EBE)  ; {Has Horace run out of money?
  $7957 AND A         ; }
  $7958 JR NZ,$7962   ; Jump forward if not
  $795A LD ($5E9C),A  ;
- $795D LD A,$06      ; { Set message ID to 6
- $795F LD ($5EB5),A  ; SORRY - NO MONEY NO SKI! }
-*$7962 XOR A         ;
- $7963 LD ($5EB4),A  ;
+ $795D LD A,$06      ; {Set message ID to 6 SORRY - NO MONEY NO SKI!
+ $795F LD ($5EB5),A  ; }
+*$7962 XOR A         ; Set #REGa to zero for some flags
+ $7963 LD ($5EB4),A  ; Set the finish gate not in view (#R$5EB4)
  $7966 LD ($5EAF),A  ;
  $7969 LD A,($5EBA)  ;
  $796C CP $03        ;
@@ -4246,7 +4314,7 @@ c$794E LD HL,$0900   ;
  $79AC LD ($5E99),HL ;
  $79AF RET           ;
 
-; Routine at 79B0
+; Create objects on the ski slope
 ;
 ; Used by the routine at #R$78B4.
 c$79B0 LD A,($5EB4)  ;
@@ -4258,17 +4326,17 @@ c$79B0 LD A,($5EB4)  ;
  $79BA JR Z,$79BE    ;
  $79BC DEC (HL)      ;
  $79BD RET           ;
-*$79BE LD HL,$5F08   ;
- $79C1 LD DE,$0012   ;
- $79C4 LD B,$0B      ;
+*$79BE LD HL,$5F08   ; Point #REGhl at the object store
+ $79C1 LD DE,$0012   ; #N$12 byte for each record
+ $79C4 LD B,$0B      ; #N$B object to check
 *$79C6 CP (HL)       ;
  $79C7 JR NZ,$79DB   ;
- $79C9 CALL $79DF    ;
- $79CC LD HL,($5EAC) ;
- $79CF LD DE,$09DC   ;
+ $79C9 CALL $79DF    ; Draw objects
+ $79CC LD HL,($5EAC) ; Set #REGhl to the distance travelled (#R$5EAC)
+ $79CF LD DE,$09DC   ; {Return if it is greater than the maximum
  $79D2 XOR A         ;
  $79D3 SBC HL,DE     ;
- $79D5 RET C         ;
+ $79D5 RET C         ; }
  $79D6 INC A         ;
  $79D7 LD ($5EB4),A  ;
  $79DA RET           ;
@@ -4276,42 +4344,44 @@ c$79B0 LD A,($5EB4)  ;
  $79DC DJNZ $79C6    ;
  $79DE RET           ;
 
-; Routine at 79DF
+; Draw objects on the ski slope
 ;
 ; Used by the routine at #R$79B0.
-c$79DF PUSH HL       ;
- $79E0 LD HL,($5EAC) ;
+c$79DF PUSH HL       ; Store #REGhl
+ $79E0 LD HL,($5EAC) ; {Increase the distance travelled
  $79E3 INC HL        ;
- $79E4 LD ($5EAC),HL ;
- $79E7 LD B,$00      ;
- $79E9 LD A,$28      ;
- $79EB CP (HL)       ;
- $79EC JR NC,$7A07   ;
- $79EE INC B         ;
- $79EF LD A,$A0      ;
- $79F1 CP (HL)       ;
- $79F2 JR NC,$7A07   ;
- $79F4 INC B         ;
+ $79E4 LD ($5EAC),HL ; }
+ $79E7 LD B,$00      ; Set #REGb to 0 to draw a tree
+ $79E9 LD A,$28      ; {Is the distance less than #N$28?
+ $79EB CP (HL)       ; }
+ $79EC JR NC,$7A07   ; Draw a tree if so
+ $79EE INC B         ; Set #REGb to 1 to draw a flag
+ $79EF LD A,$A0      ; {Is the distance less than #N$A0?
+ $79F1 CP (HL)       ; }
+ $79F2 JR NC,$7A07   ; Draw a flag if so
+ $79F4 INC B         ; Set #REGb to 2 to draw a slope
  $79F5 LD A,($5EC2)  ;
  $79F8 CP (HL)       ;
- $79F9 JR NC,$7A07   ;
+ $79F9 JR NC,$7A07   ; Draw a slope
  $79FB LD A,($69BC)  ;
  $79FE LD ($5EA8),A  ;
- $7A01 INC HL        ;
- $7A02 LD ($5EAC),HL ;
- $7A05 POP HL        ;
- $7A06 RET           ;
+ $7A01 INC HL        ; {Increase the distance travelled
+ $7A02 LD ($5EAC),HL ; }
+ $7A05 POP HL        ; {Restore #REGhl and return
+ $7A06 RET           ; }
 
-; Routine at 7A07
+; Draw a graphic on the skiing screen
 ;
 ; Used by the routine at #R$79DF.
-c$7A07 LD A,B        ;
- $7A08 ADD A,A       ;
- $7A09 ADD A,A       ;
- $7A0A LD E,A        ;
- $7A0B LD D,$00      ;
- $7A0D LD HL,$6932   ;
- $7A10 ADD HL,DE     ;
+;
+; B Graphic ID
+c$7A07 LD A,B        ; Put the graphic ID in #REGa.
+ $7A08 ADD A,A       ; {Quadruple it to get a double word offset
+ $7A09 ADD A,A       ; }
+ $7A0A LD E,A        ; {Put this in #REGde
+ $7A0B LD D,$00      ; }
+ $7A0D LD HL,$6932   ; {Add the base address of the graphic table (#R$6932)
+ $7A10 ADD HL,DE     ; }
  $7A11 LD E,(HL)     ;
  $7A12 INC HL        ;
  $7A13 LD D,(HL)     ;
@@ -4320,9 +4390,9 @@ c$7A07 LD A,B        ;
  $7A16 PUSH DE       ;
  $7A17 LD BC,$0012   ;
  $7A1A LDIR          ;
- $7A1C LD HL,($5EAC) ;
+ $7A1C LD HL,($5EAC) ; {Increase the distance travelled
  $7A1F INC HL        ;
- $7A20 LD ($5EAC),HL ;
+ $7A20 LD ($5EAC),HL ; }
  $7A23 LD A,(HL)     ;
  $7A24 AND $1F       ;
  $7A26 CP $17        ;
@@ -4704,7 +4774,7 @@ c$7C54 LD HL,$5EFD   ;
  $7C6B LD A,($5E8D)  ; Get Horace's state
  $7C6E AND A         ; Is the state 0?
  $7C6F RET Z         ; Return if it is
-*$7C70 CALL $7C74    ; { Handling hitting a tree or missing a flag
+*$7C70 CALL $7C74    ; {Handling hitting a tree or missing a flag
  $7C73 RET           ; }
 
 ; Check Horace's state and action on it
@@ -4715,13 +4785,13 @@ c$7C54 LD HL,$5EFD   ;
 c$7C74 CP $02        ; Is the state "hit a slope"?
  $7C76 RET Z         ; Return if it is
  $7C77 CP $01        ; Is the state "missed a flag"?
- $7C79 LD A,$00      ; { Set the status to 0
+ $7C79 LD A,$00      ; {Set the status to 0
  $7C7B LD ($5E8D),A  ; }
  $7C7E JR Z,$7CDE    ; If Horace missed a flag, jump forward
  $7C80 LD A,($5EBD)  ;
 ; If Horace didn't hit a slope or miss a flag, he's hit a tree
  $7C83 INC A         ;
- $7C84 CP $04        ; 
+ $7C84 CP $04        ;
  $7C86 LD B,$03      ; Set #REGb to message ID 3 (LUCKY! SKIS STILL OK)
  $7C88 JR C,$7C91    ;
  $7C8A XOR A         ;
@@ -4729,29 +4799,30 @@ c$7C74 CP $02        ; Is the state "hit a slope"?
  $7C8E INC A         ;
  $7C8F LD B,$05      ; Set #REGb to message ID 5 (BAD LUCK! SKIS BROKEN)
 *$7C91 LD ($5EBD),A  ;
- $7C94 LD A,B        ; { Set message ID to #REGb
+ $7C94 LD A,B        ; {Set message ID to #REGb
  $7C95 LD ($5EB5),A  ; }
  $7C98 CALL $7F1F    ; Print the message
  $7C9B LD BC,$2314   ; Set to loop #N$23 * #N$14 times
 *$7C9E PUSH BC       ; Store #REGbc
-*$7C9F LD A,$1F      ; Initialize #REGa to set black border and set EAR and MIC bits
- $7CA1 LD HL,$5E9B   ; { Set the border colour
+*$7C9F LD A,$1F      ; Initialize #REGa to set black border and set EAR and MIC
+                     ; bits
+ $7CA1 LD HL,$5E9B   ; {Set the border colour
  $7CA4 AND (HL)      ; }
  $7CA5 OUT ($FE),A   ; Output the border and speaker bit
  $7CA7 CALL $6DAD    ; Generate a random number
  $7CAA OR $40        ; Ensure pause is at least #N$40 ticks long
- $7CAC LD B,A        ; { Pause for that duration
+ $7CAC LD B,A        ; {Pause for that duration
 *$7CAD DJNZ $7CAD    ; }
- $7CAF LD A,$07      ; { Ensure border is white on black, and turn speaker bit off
- $7CB1 OUT ($FE),A   ; }
+ $7CAF LD A,$07      ; {Ensure border is white on black, and turn speaker bit
+ $7CB1 OUT ($FE),A   ; off}
  $7CB3 CALL $6DAD    ; Generate a random number
  $7CB6 OR $40        ; Ensure pause is at least #N$40 ticks long
- $7CB8 LD B,A        ; { Pause for that duration
+ $7CB8 LD B,A        ; {Pause for that duration
 *$7CB9 DJNZ $7CB9    ; }
- $7CBB DEC C         ; { Loop round until the sound effect has finished
+ $7CBB DEC C         ; {Loop round until the sound effect has finished
  $7CBC JR NZ,$7C9F   ; }
  $7CBE LD A,($5F04)  ; Get the next attribute to draw
- $7CC1 INC A         ; { Increment the INK colour, but leave PAPER as white
+ $7CC1 INC A         ; {Increment the INK colour, but leave PAPER as white
  $7CC2 AND $07       ;
  $7CC4 OR $38        ;
  $7CC6 LD ($5F04),A  ; }
@@ -4766,7 +4837,7 @@ c$7C74 CP $02        ; Is the state "hit a slope"?
  $7CDD RET           ;
 ; Horace missed a flag. Play a note
 *$7CDE LD HL,$69BD   ; Point #REGhl at the note
- $7CE1 CALL $6E0D    ; { Play it and return
+ $7CE1 CALL $6E0D    ; {Play it and return
  $7CE4 RET           ; }
 
 ; Reset the state of Horace skiing
@@ -4845,19 +4916,20 @@ c$7CFA LD A,($5E8D)  ; Get Horace's state
  $7D5C JR $7D38      ;
  $7D5E RET           ;
 
-; Routine at 7D5F
+; Update Horace while skiing
 ;
 ; Used by the routine at #R$7C54.
-c$7D5F CALL $7E25    ;
- $7D62 LD A,($5E8D)  ;
- $7D65 CP $02        ;
- $7D67 JR NZ,$7D88   ;
- $7D69 XOR A         ;
- $7D6A LD ($5E8D),A  ;
- $7D6D CALL $6E25    ;
- $7D70 LD A,($5EFF)  ;
- $7D73 CP $02        ;
- $7D75 JR C,$7D84    ;
+c$7D5F CALL $7E25    ; Get keyboard input
+ $7D62 LD A,($5E8D)  ; Get the current state (#R$5E8D)
+ $7D65 CP $02        ; Has Horace hit a slope?
+ $7D67 JR NZ,$7D88   ; Jump forward if not
+; Horace hit a slope, so handle that
+ $7D69 XOR A         ; {Reset the state flag
+ $7D6A LD ($5E8D),A  ; }
+ $7D6D CALL $6E25    ; Play a sound effect
+ $7D70 LD A,($5EFF)  ; Get the current direction (#R$5EFF)
+ $7D73 CP $02        ; {Jump forward if it is up or right
+ $7D75 JR C,$7D84    ; }
  $7D77 JR NZ,$7D80   ;
  $7D79 CALL $6DAD    ; Generate a random number
  $7D7C AND $01       ;
@@ -4865,10 +4937,11 @@ c$7D5F CALL $7E25    ;
 *$7D80 LD A,$04      ;
  $7D82 JR $7D85      ;
 *$7D84 XOR A         ;
-*$7D85 CALL $7E4E    ;
+*$7D85 CALL $7E4E    ; Change direction
+; Handle other movement
 *$7D88 LD DE,$F907   ;
  $7D8B LD BC,$FFE1   ;
- $7D8E LD A,($5EFF)  ;
+ $7D8E LD A,($5EFF)  ; Get the current direction (#R$5EFF)
  $7D91 AND A         ;
  $7D92 JR Z,$7DB1    ;
  $7D94 DEC A         ;
@@ -4909,7 +4982,7 @@ c$7D5F CALL $7E25    ;
  $7DD5 JR C,$7DDD    ;
  $7DD7 LD ($5E8B),DE ;
  $7DDB JR $7DF3      ;
-*$7DDD LD A,($5EFF)  ;
+*$7DDD LD A,($5EFF)  ; Get the current direction (#R$5EFF)
  $7DE0 CP $02        ;
  $7DE2 JR C,$7DF0    ;
  $7DE4 JR NZ,$7DED   ;
@@ -4944,10 +5017,10 @@ c$7D5F CALL $7E25    ;
 ;
 ; Used by the routine at #R$7D5F.
 c$7E25 CALL $6E4A    ; Get keyboard input
- $7E28 LD HL,$5EFF   ;
- $7E2B LD A,(HL)     ;
- $7E2C BIT 0,B       ;
- $7E2E JR Z,$7E37    ;
+ $7E28 LD HL,$5EFF   ; {Get the current direction (#R$5EFF)
+ $7E2B LD A,(HL)     ; }
+ $7E2C BIT 0,B       ; Is bit 0 set? (ie: left or right)
+ $7E2E JR Z,$7E37    ; Jump forward if so
  $7E30 DEC A         ;
  $7E31 BIT 1,B       ;
  $7E33 JR Z,$7E37    ;
@@ -4969,17 +5042,18 @@ c$7E25 CALL $6E4A    ; Get keyboard input
 *$7E49 BIT 7,A       ;
  $7E4B JR Z,$7E4E    ;
  $7E4D XOR A         ;
-; This entry point is used by the routine at #R$7D5F, where the direction is already set.
+; This entry point is used by the routine at #R$7D5F, where the direction is
+; already set.
 *$7E4E LD ($5EFF),A  ; Set the direction to #REGa
 ; Having determined the direction, draw Horace.
  $7E51 LD A,($5EFF)  ; Get the current direction
  $7E54 ADD A,A       ; Double it to get a word offset
  $7E55 LD E,A        ; {Put this value in #REGde.
  $7E56 LD D,$00      ; }
- $7E58 LD HL,$6702   ; { Add the base address of the skiing sprite table
+ $7E58 LD HL,$6702   ; {Add the base address of the skiing sprite table
  $7E5B ADD HL,DE     ; }
- $7E5C LD E,(HL)     ; { Put the address found in #REGde
- $7E5D INC HL        ; 
+ $7E5C LD E,(HL)     ; {Put the address found in #REGde
+ $7E5D INC HL        ;
  $7E5E LD D,(HL)     ; }
  $7E5F LD ($5F02),DE ; Store this as the sprite address to draw on screen
  $7E63 RET           ;
@@ -5014,7 +5088,7 @@ c$7E64 LD HL,($5E89) ;
  $7E8B EX AF,AF'     ;
  $7E8C RET           ;
 
-; Routine at 7E8D
+; Draw the finish gate
 ;
 ; Used by the routine at #R$78B4.
 c$7E8D LD HL,$5F08   ;
@@ -5034,7 +5108,7 @@ c$7E8D LD HL,$5F08   ;
  $7EA7 LD ($5EB4),A  ;
  $7EAA LD B,$06      ;
  $7EAC LD A,$17      ;
- $7EAE LD HL,$69C8   ; Point #REGhl at the finish banner (#R$69C8)
+ $7EAE LD HL,$69C8   ; Point #REGhl at the finish gate (#R$69C8)
 *$7EB1 LD (HL),A     ;
  $7EB2 INC A         ;
  $7EB3 ADD HL,DE     ;
@@ -5066,14 +5140,14 @@ c$7E8D LD HL,$5F08   ;
  $7EDE CP $07        ;
  $7EE0 JR NZ,$7EF6   ;
  $7EE2 LD B,A        ;
- $7EE3 XOR A         ;
- $7EE4 LD ($5EB4),A  ;
+ $7EE3 XOR A         ; Set #REGa to 0 for some flags
+ $7EE4 LD ($5EB4),A  ; Reset the "gate visible" flag
  $7EE7 LD ($5E9C),A  ;
  $7EEA LD A,($5EAF)  ;
  $7EED AND A         ;
  $7EEE LD A,B        ;
  $7EEF JR Z,$7EF2    ;
- $7EF1 XOR A         ; { Set current message ID to 0 (none )
+ $7EF1 XOR A         ; {Set current message ID to 0 (none )
 *$7EF2 LD ($5EB5),A  ; }
  $7EF5 RET           ;
 
@@ -5098,8 +5172,8 @@ c$7F04 LD A,($5EAF)  ;
  $7F09 LD A,$07      ;
  $7F0B LD ($5EA7),A  ;
  $7F0E LD ($5EAF),A  ;
- $7F11 LD A,$04      ; { Set message ID to 4 
- $7F13 LD ($5EB5),A  ; BONUS 100 POINTS }
+ $7F11 LD A,$04      ; {Set message ID to 4 BONUS 100 POINTS
+ $7F13 LD ($5EB5),A  ; }
  $7F16 LD HL,$5E73   ;
  $7F19 LD (HL),$14   ;
  $7F1B CALL $6E25    ;
@@ -5121,22 +5195,22 @@ c$7F1F LD A,($5EB5)  ; Put the string ID in #REGa.
  $7F2F LD (HL),D     ;
  $7F30 JR $7F3A      ;
 *$7F32 CP $05        ; Is the ID less than 5?
- $7F34 JR C,$7F3A    ; Jump forward if it is 
+ $7F34 JR C,$7F3A    ; Jump forward if it is
  $7F36 XOR A         ;
  $7F37 LD ($5E9C),A  ;
 *$7F3A LD HL,$6A27   ; Point #REGhl at the string table
  $7F3D LD A,E        ; Put the string ID in #REGa.
  $7F3E DEC A         ; Convert it to 0 offset.
  $7F3F ADD A,A       ; Double it to get a word offset.
- $7F40 LD E,A        ; { Add the base address of the string table.
+ $7F40 LD E,A        ; {Add the base address of the string table.
  $7F41 ADD HL,DE     ; }
- $7F42 LD E,(HL)     ; { Point #REGde to the string.
+ $7F42 LD E,(HL)     ; {Point #REGde to the string.
  $7F43 INC HL        ;
  $7F44 LD D,(HL)     ; }
  $7F45 LD BC,$0021   ; Set the length to #N$21
  $7F48 CALL $203C    ; Print the string
  $7F4B LD HL,$5EB7   ;
- $7F4E XOR A         ; { Set message ID to 0 (none)
+ $7F4E XOR A         ; {Set message ID to 0 (none)
  $7F4F LD ($5EB5),A  ; }
  $7F52 CP (HL)       ;
  $7F53 JR NZ,$7F5B   ;
