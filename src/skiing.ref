@@ -4,3 +4,27 @@ Copyright(c) 1982 William Tang / Beam Software (code), 2024 Ritchie Swann (disas
 
 [Config]
 HtmlWriterClass=skiing.SkiingHtmlWriter
+RefFiles=graphics.ref
+
+[Index]
+MemoryMaps
+Graphics
+DataTables
+
+[Index:Graphics:Graphics]
+Horace
+Traffic
+Skiing
+Screens
+
+[Page:Horace]
+SectionPrefix=Horace
+
+[Page:Traffic]
+SectionPrefix=Traffic
+
+[Page:Skiing]
+SectionPrefix=Skiing
+
+[Page:Screens]
+SectionPrefix=Screens

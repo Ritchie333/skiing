@@ -1,0 +1,179 @@
+[Horace:Up]
+#HTML( 
+<table>
+<tr>
+<td colspan=2>Without skis</td><td align=center colspan=2>With skis</td>
+</td>
+</tr>
+<tr>
+<td>#R$5CE0<br/><img src="./images/horaceu1.png"/></td>
+<td>#R$5D60<br/><img src="./images/horaceu2.png"/</td>
+<td>#R$6108<br/><img src="./images/horaceskiu1.png"/></td>
+<td>#R$61D0<br/><img src="./images/horaceskiu2.png"/</td>
+</tr>
+</table>
+)
+
+[Horace:Down]
+#HTML( 
+<table>
+<tr>
+<td colspan=2>Without skis</td><td align=center colspan=2>With skis</td>
+</td>
+</tr>
+<tr>
+<td>#R$5D20<br/><img src="./images/horaced1.png"/></td>
+<td>#R$5DA0<br/><img src="./images/horaced2.png"/</td>
+<td>#R$6168<br/><img src="./images/horaceskid1.png"/></td>
+<td>#R$6230<br/><img src="./images/horaceskid2.png"/</td>
+</tr>
+</table>
+)
+
+[Horace:Left]
+#HTML( 
+<table>
+<tr>
+<td colspan=2>Without skis</td><td align=center colspan=2>With skis</td>
+</td>
+</tr>
+<tr>
+<td>#R$5D40<br/><img src="./images/horacel1.png"/></td>
+<td>#R$5DC0<br/><img src="./images/horacel2.png"/</td>
+<td>#R$6198<br/><img src="./images/horaceskil1.png"/></td>
+<td>#R$6260<br/><img src="./images/horaceskil2.png"/</td>
+</tr>
+</table>
+)
+
+[Horace:Right]
+#HTML( 
+<table>
+<tr>
+<td colspan=2>Without skis</td><td align=center colspan=2>With skis</td>
+</td>
+</tr>
+<tr>
+<td>#R$5D00<br/><img src="./images/horacer1.png"/></td>
+<td>#R$5D80<br/><img src="./images/horacer2.png"/</td>
+<td>#R$6138<br/><img src="./images/horaceskir1.png"/></td>
+<td>#R$6200<br/><img src="./images/horaceskir2.png"/</td>
+</tr>
+</table>
+)
+
+[Horace:Skiing]
+#HTML( 
+<table>
+<tr>
+<td>E</td><td>SE</td><td>S</td><td>SW</td><td>W</td>
+</tr>
+<tr>
+<td>#R$670C<br/><img src="./images/hskie.png"/></td>
+<td>#R$679C<br/><img src="./images/hskise.png"/</td>
+<td>#R$67E4<br/><img src="./images/hskiss.png"/</td>
+<td>#R$67E4<br/><img src="./images/hskisw.png"/></td>
+<td>#R$682C<br/><img src="./images/hskiw.png"/</td>
+</tr>
+</table>
+)
+
+[Horace:Crashed]
+#HTML( 
+<table>
+<tr>
+<td>#R$6974<br/><img src="./images/horacex.png"/></td>
+</tr>
+</table>
+)
+
+[Traffic:Bike]
+#HTML( 
+<table>
+<tr>
+<td>Left</td><td>Right</td>
+</tr>
+<tr>
+<td>#R$5DE0<br/><img src="./images/bikel.png"/></td>
+<td>#R$5E20<br/><img src="./images/biker.png"/</td>
+</tr>
+</table>
+)
+
+[Traffic:Car]
+#HTML( 
+<table>
+<tr>
+<td>Left</td><td>Right</td>
+</tr>
+<tr>
+<td>#R$6290<br/><img src="./images/carl.png"/></td>
+<td>#R$62F0<br/><img src="./images/carr.png"/</td>
+</tr>
+</table>
+)
+
+[Traffic:Truck]
+#HTML( 
+<table>
+<tr>
+<td>Left</td><td>Right</td>
+</tr>
+<tr>
+<td>#R$6350<br/><img src="./images/truckl.png"/></td>
+<td>#R$6431<br/><img src="./images/truckr.png"/</td>
+</tr>
+</table>
+)
+
+[Traffic:Ambulance]
+#HTML( 
+<table>
+<tr>
+<td>Left</td><td>Right</td>
+</tr>
+<tr>
+<td>#R$6512<br/><img src="./images/ambulancel.png"/></td>
+<td>#R$6572<br/><img src="./images/ambulancer.png"/</td>
+</tr>
+</table>
+)
+
+[Skiing:Ski hut]
+#HTML( 
+<table>
+<tr>
+<td>#R$65D2<br/><img src="./images/skihut.png"/></td>
+</tr>
+</table>
+)
+
+[Skiing:Slope]
+#HTML( 
+<table>
+<tr>
+<td>#R$68FC<br/><img src="./images/slope.png"/></td>
+</tr>
+</table>
+)
+
+[Skiing:Flag]
+#HTML( 
+<table>
+<tr>
+<td>#R$5B00<br/><img src="./images/flag.png"/></td>
+</tr>
+</table>
+)
+
+[Skiing:Tree]
+#HTML( 
+<table>
+<tr>
+<td>#R$6884<br/><img src="./images/tree.png"/></td>
+</tr>
+</table>
+)
+
+[Screens:Loading screen]
+#HTML( #R$4000<br><img src="images/scr/loading.png"/>)

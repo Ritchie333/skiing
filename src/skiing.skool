@@ -1,4 +1,7 @@
 ; Loading screen
+; #UDGTABLE
+; { #SCR2(loading) }
+; TABLE#
 b$4000 DEFB $00,$00,$00,$00,$00,$00,$01,$FF
  $4008 DEFB $FF,$FF,$C0,$00,$00,$00,$00,$00
  $4010 DEFB $00,$00,$00,$00,$00,$00,$00,$00
