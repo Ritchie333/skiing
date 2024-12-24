@@ -1385,7 +1385,7 @@ c$5F70 LD DE,$5B00   ; {Move #N$5cd0 - #N$5b00 for #N$100 bytes
  $5F7B LD DE,$5CD0   ; {Move #N$5dd0 - #N$5cd0 for #N$1a0 bytes
  $5F7E LD BC,$01A0   ;
  $5F81 LDIR          ; }
-*$5F83 JP $5F83      ; Start the game
+*$5F83 JP $601C      ; Start the game
 
 ; Unused
 u$5F86 DEFB $00,$00,$00,$00,$00,$00,$00,$00
