@@ -874,9 +874,12 @@ b$5B00 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $5B08 DEFB $40,$40,$40,$40,$40,$40,$40,$40
  $5B10 DEFB $60,$78,$7F,$7E,$7C,$7C,$70,$40
 
-; Data block at 5B18
-b$5B18 DEFB $3F,$3F,$3F,$3C,$3C,$3C,$3C,$3C
- $5B20 DEFB $3C,$3C,$3C,$3C,$3C,$3C,$3C
+; Tree attributes
+b$5B18 DEFB $3F,$3F,$3F
+ $5B1B DEFB $3C,$3C,$3C
+ $5B1E DEFB $3C,$3C,$3C
+ $5B1F DEFB $3C,$3C,$3C
+ $5B22 DEFB $3C,$3C,$3C
 
 ; Title text top line
 b$5B27 DEFB $F5,$0F,$50,$BD,$F1
@@ -933,7 +936,7 @@ w$5BF4 DEFW $000B
 w$5BF8 DEFW $0006
  $5BFA DEFW $038C
 
-; Motorbike L data
+; Motorbike L attributes
 b$5BFC DEFB $00,$07,$07,$00
 
 ; Unused
@@ -1067,14 +1070,13 @@ b$5E20 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $5E50 DEFB $70,$F8,$C8,$C0,$00,$33,$1F,$92
  $5E58 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
-; Motorbike R data
+; Motorbike R attributes
 b$5E60 DEFB $00,$07,$07,$00
 
-; Car L data
-b$5E64 DEFB $00,$06,$06,$06
- $5E68 DEFB $06,$00
+; Car L attributes
+b$5E64 DEFB $00,$06,$06,$06,$06,$00
 
-; Car R data
+; Car R attributes
 b$5E6A DEFB $00,$02,$02,$02,$02,$00
 
 ; Time to remain on the title screen
@@ -1095,10 +1097,10 @@ g$5E74 DEFB $FF
 ; Height of current vehicle
 g$5E75 DEFB $8F
 
-; Movement bit mask ?
+; Height of vehicle attributes
 g$5E76 DEFB $F1
 
-; Movement bit mask ?
+; Width of vehicle attributes
 g$5E77 DEFB $7E
 
 ; Address of next attribute to draw
@@ -1119,7 +1121,7 @@ g$5E7D DEFB $F9
 ; Game status buffer entry at 5E7E
 g$5E7E DEFB $E7
 
-; Address of next sprite to draw
+; Address of next vehicle movement data
 g$5E7F DEFW $9F1E
 
 ; Next screen address to use for vehicle
@@ -1354,7 +1356,7 @@ g$5F06 DEFB $00
 ; #LIST(data)
 ; { 00 : Vehicle type (0 = none, 1 = ambulance, 2 = bike, 3 = car, 6 = truck) }
 ; { 01 : Tick count before the vehicle should be updated }
-; { 02 : ?? }
+; { 02 : Direction }
 ; { 03 : ?? }
 ; { 04-05 : Screen position }
 ; { 06-07 : Pointer to sprite data }
@@ -1372,17 +1374,17 @@ g$5F07 DEFB $00,$0E,$1F,$13,$03,$00,$CC,$F8,$49,$00,$00,$00,$00
  $5F55 DEFB $33,$1F,$92,$00,$00,$00,$00,$00,$00,$00,$00,$00,$07
  $5F62 DEFB $07,$00,$00,$06,$06,$06,$06,$00,$00,$02,$02,$02,$02
 
-; Data block at 5F6F
-b$5F6F DEFB $00
+; Unused
+u$5F6F DEFB $00
 
 ; Startup code
 ;
 ; Used by the routine at #R$6000.
-c$5F70 LD DE,$5B00   ; {Move #N$5cd0 - #N$5b00 for #N$100 bytes
+c$5F70 LD DE,$5B00   ; {Move #N$5cd0 - #N$5b00 for #N$100 bytes to #N$5bff
  $5F73 LD HL,$5CD0   ;
  $5F76 LD BC,$0100   ;
  $5F79 LDIR          ; }
- $5F7B LD DE,$5CD0   ; {Move #N$5dd0 - #N$5cd0 for #N$1a0 bytes
+ $5F7B LD DE,$5CD0   ; {Move #N$5dd0 - #N$5cd0 for #N$1a0 bytes to #N$5e6f
  $5F7E LD BC,$01A0   ;
  $5F81 LDIR          ; }
 *$5F83 JP $601C      ; Start the game
@@ -1672,11 +1674,9 @@ b$6350 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $6418 DEFB $00,$00,$00,$80,$60,$98,$06,$FF
  $6420 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
-; Truck L data
+; Truck L attributes
 b$6428 DEFB $00,$05,$05,$05,$05,$05,$05,$05
-
-; Data block at 6430
-b$6430 DEFB $00
+ $6430 DEFB $00
 
 ; Truck R
 ;
@@ -1711,7 +1711,7 @@ b$6431 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; Data block at 6501
 b$6501 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
-; Truck R data
+; Truck R attributes
 b$6509 DEFB $00,$05,$05,$05,$05,$05,$05,$05
  $6511 DEFB $00
 
@@ -1769,14 +1769,16 @@ b$65D2 DEFB $13,$13,$13,$13,$13,$13,$13,$13
  $6652 DEFB $FF,$01,$01,$08,$18,$F8,$F0,$00
  $665A DEFB $00,$00,$80,$80,$C0,$60,$20,$30
 
-; Data block at 6662
-b$6662 DEFB $03,$03,$01,$40,$40,$20,$5D,$3C
- $666A DEFB $02,$02
+; Horace without skis - default data
+b$6662 DEFB $03,$03,$01
+ $6665 DEFW $4040       ; Screen location
+ $6667 DEFW $5D20       ; Sprite data
+ $6669 DEFB $3C,$02,$02
 
 ; Horace with skis - default data
 b$666C DEFB $03,$03,$01
- $666F DEFW $50F6
- $6671 DEFW $6138
+ $666F DEFW $50F6       ; Screen location
+ $6671 DEFW $6138       ; Sprite data
  $6673 DEFB $3C,$02,$03
 
 ; Traffic definitions
@@ -1794,7 +1796,7 @@ b$6682 DEFB $02      ; Vehicle type
  $6685 DEFB $00
  $6686 DEFW $483D    ; Initial screen address
  $6688 DEFW $5E20    ; Sprite data (#R$5E20)
- $668A DEFW $5E60
+ $668A DEFW $5E60    ; Attributes
  $668C DEFB $02      ; Height
  $668D DEFB $04      ; Width
  $668E DEFB $00
@@ -1806,7 +1808,7 @@ b$668F DEFB $02      ; Vehicle type
  $6692 DEFB $01
  $6693 DEFW $505F    ; Initial screen address
  $6695 DEFW $5DE0    ; Sprite data (#R$5DE0)
- $6697 DEFW $5BFC
+ $6697 DEFW $5BFC    ; Attributes
  $6699 DEFB $02      ; Height
  $669A DEFB $04      ; Width
  $669B DEFB $00
@@ -1818,7 +1820,7 @@ b$669C DEFB $03      ; Vehicle type
  $669F DEFB $00
  $66A0 DEFW $483B    ; Initial screen address
  $66A2 DEFW $62F0    ; Sprite data (#R$62F0)
- $66A4 DEFW $5E6A
+ $66A4 DEFW $5E6A    ; Attributes
  $66A6 DEFB $02      ; Height
  $66A7 DEFB $06      ; Width
  $66A8 DEFB $00
@@ -1830,7 +1832,7 @@ b$66A9 DEFB $03      ; Vehicle type
  $66AC DEFB $01
  $66AD DEFW $505F    ; Initial screen address
  $66AF DEFW $6290    ; Sprite data (#R$6290)
- $66B1 DEFW $5E64
+ $66B1 DEFW $5E64    ; Attributes
  $66B3 DEFB $02      ; Height
  $66B4 DEFB $06      ; Width
  $66B5 DEFB $00
@@ -1842,7 +1844,7 @@ b$66B6 DEFB $06      ; Vehicle type
  $66B9 DEFB $00
  $66BA DEFW $4838    ; Initial screen address
  $66BC DEFW $6431    ; Sprite data (#R$6431)
- $66BE DEFW $6509
+ $66BE DEFW $6509    ; Attributes
  $66C0 DEFB $03      ; Height
  $66C1 DEFB $09      ; Width
  $66C2 DEFB $00
@@ -1854,7 +1856,7 @@ b$66C3 DEFB $06      ; Vehicle type
  $66C6 DEFB $01
  $66C7 DEFW $505F    ; Initial screen address
  $66C9 DEFW $6350    ; Sprite data (#R$6350)
- $66CB DEFW $6428
+ $66CB DEFW $6428    ; Attributes
  $66CD DEFB $03      ; Height
  $66CE DEFB $09      ; Width
  $66CF DEFB $00
@@ -1866,12 +1868,12 @@ b$66D0 DEFB $01      ; Vehicle type
  $66D3 DEFB $01
  $66D4 DEFW $505F    ; Initial screen address
  $66D6 DEFW $6512    ; Sprite data (#R$6512)
- $66D8 DEFW $66DD
+ $66D8 DEFW $66DD    ; Attributes
  $66DA DEFB $02      ; Height
  $66DB DEFB $06      ; Width
  $66DC DEFB $00
 
-; Ambulance L data
+; Ambulance L attributes
 b$66DD DEFB $00,$03,$03,$03,$03,$00
 
 ; Ambulance R definition
@@ -1881,17 +1883,17 @@ b$66E3 DEFB $01      ; Vehicle type
  $66E6 DEFB $00
  $66E7 DEFW $483B    ; Initial screen address
  $66E9 DEFW $6572    ; Sprite data (#R$6512)
- $66EB DEFW $66F0
+ $66EB DEFW $66F0    ; Attributes
  $66ED DEFB $02      ; Height
  $66EE DEFB $06      ; Width
  $66EF DEFB $00
 
-; Ambulance R data
+; Ambulance R attributes
 b$66F0 DEFB $00,$03,$03,$03,$03,$00
 
-; Data block at 66F6
-b$66F6 DEFB $39,$3B,$3B,$3B,$3B,$39,$39,$3B
- $66FE DEFB $3B,$3B,$3B,$39
+; Ambulance R (bottom of screen) attributes
+b$66F6 DEFB $39,$3B,$3B,$3B,$3B,$39
+ $66FC DEFB $39,$3B,$3B,$3B,$3B,$39
 
 ; Horace skiing sprite table
 w$6702 DEFW $670C    ; East
@@ -1971,10 +1973,10 @@ b$6874 DEFB $01,$01,$02
  $6879 DEFW $679C
  $687B DEFB $39,$03,$03
 
-; Data block at 687E
+; Flag attributes 1
 b$687E DEFB $3F,$3A,$3A
 
-; Data block at 6881
+; Flag attributes 2
 b$6881 DEFB $3F,$3D,$3D
 
 ; Tree
@@ -2006,48 +2008,51 @@ b$68FC DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $691C DEFB $00,$00,$00,$E0,$FC,$0F,$00,$00
  $6924 DEFB $00,$00,$00,$00,$00,$E0,$7C,$07
 
-; Data block at 692C
+; Slope attributes
 b$692C DEFB $3F,$3F,$3F,$38,$38,$38
 
 ; Skiing object definitions
 b$6932 DEFW $693E    ; Object 1 - tree
  $6934 DEFW $6947
- $6936 DEFW $6950    ; Object 2
- $6938 DEFW $6959
- $693A DEFW $6962    ; Object 3
+ $6936 DEFW $6950    ; Object 2 - flag
+ $6938 DEFW $6959    ; Object 2 - flag (alt)
+ $693A DEFW $6962    ; Object 3 - slope
  $693C DEFW $696B
 
 ; Skiing object 1 - tree
 b$693E DEFB $02,$00,$00
  $6941 DEFW $6884       ; Sprite address
- $6943 DEFW $5B18
+ $6943 DEFW $5B18       ; Attributes
  $6945 DEFB $05         ; Height
  $6946 DEFB $03         ; Width
 
-; Data block at 6947
-b$6947 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+; Unused
+u$6947 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $694F DEFB $00
 
-; Data block at 6950
+; Skiing object 2 - flag
 b$6950 DEFB $01,$00,$00
  $6953 DEFW $5B00       ; Sprite address
- $6955 DEFW $687E
+ $6955 DEFW $687E       ; Attributes
  $6957 DEFB $03         ; Height
  $6958 DEFB $01         ; Width
 
-; Data block at 6959
-b$6959 DEFB $01,$00,$00,$00,$5B,$81,$68,$03
- $6961 DEFB $01
+; Skiing object 2 - flag (alt)
+b$6959 DEFB $01,$00,$00
+ $695C DEFW $5B00       ; Sprite address
+ $695E DEFW $6881       ; Attributes
+ $6960 DEFB $03         ; Height
+ $6961 DEFB $01         ; Width
 
-; Data block at 6962
+; Skiing object 3 - slope
 b$6962 DEFB $03,$00,$00
  $6965 DEFW $68FC       ; Sprite address
- $6967 DEFB $2C,$69
+ $6967 DEFW $692C       ; Attributes
  $6969 DEFB $02         ; Height
  $696A DEFB $03         ; Width
 
-; Data block at 696B
-b$696B DEFB $00,$00,$00,$00,$00,$00,$00,$00
+; Unused
+u$696B DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $6973 DEFB $00
 
 ; Horace crashed into a tree
@@ -2138,6 +2143,7 @@ c$6BC0 LD B,$18      ; {Clear #N$18 lines
  $6BE9 LD A,($5EB8)  ; {Is the game in demo mode?
  $6BEC AND A         ; }
  $6BED JR Z,$6C02    ; Jump forward if not
+; The game is in demo mode, so print the text for that
  $6BEF LD DE,$6B1C   ; Set #REGde to demo mode text 1 (#R$6B1C)
  $6BF2 LD BC,$0012   ; Set #REGde to the length
  $6BF5 CALL $203C    ; Print it
@@ -2145,6 +2151,7 @@ c$6BC0 LD B,$18      ; {Clear #N$18 lines
  $6BFB LD BC,$0020   ; Set #REGde to the length
  $6BFE CALL $203C    ; Print it
  $6C01 RET           ; Return
+; The game is not in demo mode, so print the dynamic status text
 *$6C02 LD DE,$60B9   ; Set #REGde to the display text (#R$60B9)
  $6C05 LD BC,$0028   ; Set #REGbc to the length
  $6C08 CALL $203C    ; Print the string
@@ -2272,7 +2279,7 @@ c$6C8B LD HL,($5E89) ; Put Horace's current screen address in #REGhl (#R$5E89)
 ;
 ; A Next attribute to use
 c$6CB9 LD DE,$FFE0   ; Set #REGde to move back one row
- $6CBC LD HL,($5E78) ;
+ $6CBC LD HL,($5E78) ; Point #REGhl at the attribute address
  $6CBF LD B,$02      ; 2 rows to draw
  $6CC1 LD C,A        ; Put the attribute in #REGc
 *$6CC2 PUSH BC       ; {Store the row count and attribute address
@@ -3050,7 +3057,7 @@ c$7164 PUSH HL       ; Store #REGhl
  $7165 LD HL,$5EA4   ;
 *$7168 CALL $6DAD    ; Generate a random number
  $716B AND $07       ; Keep the top 7 bits
- $716D CP $06        ; {If the value is 6 or 7, generate another random number.
+ $716D CP $06        ; {If the value is 6 or less, generate another random number.
  $716F JR NC,$7168   ; }
 ; #REGa now contains a random traffic ID between 0 and 5
  $7171 BIT 2,A       ; Is bit 2 set ie: a car?
@@ -3130,18 +3137,19 @@ c$7164 PUSH HL       ; Store #REGhl
 ; Draw the ambulance
 ;
 ; Used by the routine at #R$6053.
-c$71E6 LD DE,$5F07   ;
- $71E9 LD A,(DE)     ;
- $71EA AND A         ;
- $71EB JR Z,$71F2    ;
+c$71E6 LD DE,$5F07   ; Point #REGde at the ambulance data (#R$5F07)
+ $71E9 LD A,(DE)     ; { Is an ambulance on screen?
+ $71EA AND A         ; }
+ $71EB JR Z,$71F2    ; Jump forward if so
+; There's an ambulance on screen, so update it
  $71ED LD A,$01      ;
  $71EF INC DE        ;
  $71F0 LD (DE),A     ;
  $71F1 RET           ;
 *$71F2 CALL $6DAD    ; Generate a random number
- $71F5 AND $1F       ;
- $71F7 CP $1F        ;
- $71F9 RET NZ        ;
+ $71F5 AND $1F       ; Keep the bottom 5 bits
+ $71F7 CP $1F        ; Are all bits set?
+ $71F9 RET NZ        ; Return if they aren't
 ; Determine whether to run the ambulance from right - left or left - right
  $71FA LD HL,$66E3   ; Point #REGhl at the ambulance R definition (#R$66D0)
  $71FD CALL $6DAD    ; Generate a random number
@@ -3410,15 +3418,15 @@ c$7389 LD C,A        ;
 *$739B ADD HL,DE     ;
  $739C DJNZ $739B    ;
  $739E EX DE,HL      ;
-*$739F LD HL,($5E81) ;
- $73A2 LD A,H        ;
+*$739F LD HL,($5E81) ; Put the screen address in #REGhl
+ $73A2 LD A,H        ; {Convert this to an attribute address
  $73A3 AND $18       ;
  $73A5 SRA A         ;
  $73A7 SRA A         ;
  $73A9 SRA A         ;
  $73AB ADD A,$58     ;
- $73AD LD H,A        ;
- $73AE LD ($5E78),HL ;
+ $73AD LD H,A        ; }
+ $73AE LD ($5E78),HL ; Set this as the attribute address
  $73B1 ADD HL,DE     ;
  $73B2 LD A,($5E74)  ;
  $73B5 LD B,A        ;
@@ -3478,11 +3486,11 @@ c$7402 LD DE,($5E81) ; Put the next screen address in #REGde
  $740F LD (HL),E     ;
  $7410 INC HL        ;
  $7411 LD (HL),D     ; }
- $7412 INC HL        ; {Put the movement buffer in #REGhl
+ $7412 INC HL        ; {Put the sprite buffer in #REGde
  $7413 LD E,(HL)     ;
  $7414 INC HL        ;
  $7415 LD D,(HL)     ; }
- $7416 INC HL        ; {Put the sprite buffer in #REGbc
+ $7416 INC HL        ; {Put the movement buffer in #REGbc
  $7417 LD C,(HL)     ;
  $7418 INC HL        ;
  $7419 LD B,(HL)     ; }
@@ -3493,14 +3501,14 @@ c$7402 LD DE,($5E81) ; Put the next screen address in #REGde
  $7427 EX AF,AF'     ;
 *$7428 PUSH DE       ;
  $7429 PUSH HL       ;
- $742A LD A,($5E76)  ;
- $742D LD C,A        ;
- $742E LD B,$00      ;
- $7430 ADD HL,BC     ;
- $7431 ADD A,A       ;
+ $742A LD A,($5E76)  ; Get the attribute height
+ $742D LD C,A        ; {Put this in #REGbc
+ $742E LD B,$00      ; }
+ $7430 ADD HL,BC     ; Add this to the base offset
+ $7431 ADD A,A       ; {Multiply by 8
  $7432 ADD A,A       ;
- $7433 ADD A,A       ;
- $7434 LD C,A        ;
+ $7433 ADD A,A       ; }
+ $7434 LD C,A        ; Store in #REGc
  $7435 EX DE,HL      ;
  $7436 ADD HL,BC     ;
  $7437 EX DE,HL      ;
@@ -3548,32 +3556,32 @@ c$7402 LD DE,($5E81) ; Put the next screen address in #REGde
  $7473 ADD HL,BC     ;
  $7474 EX DE,HL      ;
  $7475 JR $7428      ;
-*$7477 LD HL,($5E78) ;
- $747A LD DE,($5E7F) ;
- $747E LD A,($5E75)  ;
-*$7481 EX AF,AF'     ;
- $7482 PUSH DE       ;
- $7483 PUSH HL       ;
- $7484 LD A,($5E76)  ;
- $7487 LD C,A        ;
- $7488 LD B,$00      ;
- $748A ADD HL,BC     ;
- $748B EX DE,HL      ;
- $748C ADD HL,BC     ;
- $748D LD A,($5E77)  ;
- $7490 AND A         ;
- $7491 JR Z,$7496    ;
- $7493 LD C,A        ;
- $7494 LDIR          ;
-*$7496 POP HL        ;
- $7497 POP DE        ;
- $7498 AND A         ;
- $7499 LD C,$20      ;
- $749B SBC HL,BC     ;
- $749D EX AF,AF'     ;
- $749E DEC A         ;
- $749F JR NZ,$7481   ;
- $74A1 RET           ;
+*$7477 LD HL,($5E78) ; Point #REGhl at the attribute screen address
+ $747A LD DE,($5E7F) ; Point #REGde to the attribute table
+ $747E LD A,($5E75)  ; Get the vehicle height
+*$7481 EX AF,AF'     ; Swap #REGaf to preserve this
+ $7482 PUSH DE       ; {Store #REGde and #REGhl
+ $7483 PUSH HL       ; }
+ $7484 LD A,($5E76)  ; Load #REGa with the attribute height (#R$5E76)
+ $7487 LD C,A        ; {Put this in #REGbc
+ $7488 LD B,$00      ; }
+ $748A ADD HL,BC     ; Add this to get the main attribute address
+ $748B EX DE,HL      ; Swap #REGde and #REGhl, so #REGhl points to the attribute table
+ $748C ADD HL,BC     ; Add this to get the main attribute value
+ $748D LD A,($5E77)  ; Get the attribute width (#R$5E77)
+ $7490 AND A         ; Is it zero?
+ $7491 JR Z,$7496    ; Jump forward if so
+ $7493 LD C,A        ; {Otherwise, set the copying length, and copy it
+ $7494 LDIR          ; }
+*$7496 POP HL        ; {Restore #REGhl and #REGde
+ $7497 POP DE        ; }
+ $7498 AND A         ; Clear the carry flag
+ $7499 LD C,$20      ; Set the length to move up one row
+ $749B SBC HL,BC     ; Move up a row
+ $749D EX AF,AF'     ; Restore the vehicle height
+ $749E DEC A         ; {Loop while there are more rows to do
+ $749F JR NZ,$7481   ; }
+ $74A1 RET           ; Otherwise return
 
 ; Update movement flags
 ;
@@ -3598,9 +3606,9 @@ c$74A2 PUSH HL       ; Store #REGhl
  $74B3 JR NZ,$74BF   ; Jump forward if direction is left
 ; Handle right facing
  $74B5 SUB L         ;
- $74B6 LD ($5E77),A  ;
+ $74B6 LD ($5E77),A  ; Set the attribute width
  $74B9 LD A,L        ;
- $74BA LD ($5E76),A  ;
+ $74BA LD ($5E76),A  ; Set the attribute height
  $74BD JR $74D0      ;
 ; Handle left facing
 *$74BF CP L          ;
@@ -3609,9 +3617,9 @@ c$74A2 PUSH HL       ; Store #REGhl
  $74C3 AND A         ;
  $74C4 JR NZ,$74C9   ;
  $74C6 LD A,($5E74)  ;
-*$74C9 LD ($5E77),A  ;
+*$74C9 LD ($5E77),A  ; Set the attribute width
  $74CC XOR A         ;
- $74CD LD ($5E76),A  ;
+ $74CD LD ($5E76),A  ; Set the attribute height
 ; Calculate the attribute address
 *$74D0 POP HL        ; {Restore the screen address
  $74D1 PUSH HL       ; }
@@ -3711,12 +3719,12 @@ c$7559 LD HL,$5EB8   ;
  $7574 XOR A         ;
  $7575 LD ($5E9C),A  ;
  $7578 RET           ;
-*$7579 LD HL,$6662   ;
+*$7579 LD HL,$6662   ; Load the default data without skis
  $757C LD A,($5EBC)  ;
  $757F AND A         ;
  $7580 JR Z,$7585    ;
- $7582 LD HL,$666C   ; {Copy the default data into the graphics buffer entries
-*$7585 LD DE,$5EFD   ;
+ $7582 LD HL,$666C   ; Load the default data with skis
+*$7585 LD DE,$5EFD   ; {Copy the default data into the graphics buffer entries
  $7588 LD BC,$000A   ;
  $758B LDIR          ; }
  $758D LD HL,($5F00) ;
@@ -4267,7 +4275,7 @@ c$792A CALL $6BC0    ;
  $794B LDIR          ; }
  $794D RET           ; Return
 
-; Initialize skiing screen
+; Set up the initial skiing state
 ;
 ; Used by the routine at #R$78B4.
 c$794E LD HL,$0900   ; {Initialize the distance travelled (#R$5EAC)
@@ -4599,15 +4607,15 @@ c$7ABA EXX           ;
  $7B5D ADD HL,BC     ;
  $7B5E EX DE,HL      ;
  $7B5F JR $7B18      ;
-*$7B61 LD HL,($5E81) ;
- $7B64 LD A,H        ;
+*$7B61 LD HL,($5E81) ; Put the screen address in #REGhl
+ $7B64 LD A,H        ; {Convert this to an attribute address
  $7B65 AND $18       ;
  $7B67 SRA A         ;
  $7B69 SRA A         ;
  $7B6B SRA A         ;
  $7B6D ADD A,$58     ;
- $7B6F LD H,A        ;
- $7B70 LD DE,($5E7F) ;
+ $7B6F LD H,A        ; }
+ $7B70 LD DE,($5E7F) ; Point #REGde at the movement table
  $7B74 LD A,($5E75)  ;
  $7B77 EX AF,AF'     ;
 *$7B78 PUSH DE       ;
@@ -5009,8 +5017,8 @@ c$7D5F CALL $7E25    ; Get keyboard input
  $7E0B LD HL,($5E8B) ;
  $7E0E LD ($5E89),HL ;
  $7E11 LD ($5F00),HL ;
-*$7E14 LD HL,($5F00) ;
- $7E17 LD DE,($5F02) ;
+*$7E14 LD HL,($5F00) ; Put the screen address in #REGhl
+ $7E17 LD DE,($5F02) ; Put the sprite address in #REGde
  $7E1B LD A,($5F04)  ;
  $7E1E LD ($5E7A),A  ;
  $7E21 CALL $6C20    ; Draw the sprite
