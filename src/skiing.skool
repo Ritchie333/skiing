@@ -967,17 +967,11 @@ u$5C00 DEFB $FF,$00,$00,$00,$FF,$00,$23,$0D
  $5CC0 DEFB $81,$0F,$C4,$15,$52,$F4,$09,$C4
  $5CC8 DEFB $15,$50,$80,$00,$0A,$41,$00,$FD
 
-; Game status buffer entry at 5CD0
-g$5CD0 DEFB $30,$30
-
 ; Cash digits
-g$5CD2 DEFB $30,$30,$30
-
-; Game status buffer entry at 5CD5
-g$5CD5 DEFB $30
+g$5CD0 DEFB $30,$30,$30,$30,$30
 
 ; Score digits
-g$5CD6 DEFB $30,$30,$30,$30,$30
+g$5CD5 DEFB $30,$30,$30,$30,$30,$30
 
 ; Hi score digits
 g$5CDB DEFB $30,$30,$30,$30,$30
@@ -1085,10 +1079,10 @@ g$5E70 DEFB $07
 ; Pause flag
 g$5E71 DEFB $1F
 
-; Game status buffer entry at 5E72
+; Sound effect flag
 g$5E72 DEFB $7F
 
-; Game status buffer entry at 5E73
+; Points to be awarded
 g$5E73 DEFB $7F
 
 ; Width of current vehicle
@@ -1109,17 +1103,8 @@ g$5E78 DEFW $F8F0
 ; Next attribute to draw
 g$5E7A DEFB $FE
 
-; Game status buffer entry at 5E7B
-g$5E7B DEFB $FE
-
-; Game status buffer entry at 5E7C
-g$5E7C DEFB $FF
-
-; Game status buffer entry at 5E7D
-g$5E7D DEFB $F9
-
-; Game status buffer entry at 5E7E
-g$5E7E DEFB $E7
+; Unused
+g$5E7B DEFB $FE,$FF,$F9,$E7
 
 ; Address of next vehicle movement data
 g$5E7F DEFW $9F1E
@@ -1139,10 +1124,7 @@ g$5E84 DEFW $0703
 g$5E86 DEFB $0C
 
 ; Random number seed
-g$5E87 DEFB $07
-
-; Game status buffer entry at 5E88
-g$5E88 DEFB $F8
+g$5E87 DEFW $F807
 
 ; Horace's screen address 1
 g$5E89 DEFW $3070
@@ -1162,22 +1144,14 @@ g$5E8D DEFB $3C
 ; Set to 1 if Horace hit a vehicle
 g$5E8E DEFB $80
 
-; Game status buffer entry at 5E8F
-g$5E8F DEFB $C0
+; Unused
+u$5E8F DEFB $C0
 
-; Game status buffer entry at 5E90
-g$5E90 DEFB $07
+; Copy of Horace's screen position
+g$5E90 DEFW $1F07
+ $5E90 DEFW $7C7F
 
-; Game status buffer entry at 5E91
-g$5E91 DEFB $1F
-
-; Game status buffer entry at 5E92
-g$5E92 DEFB $7F
-
-; Game status buffer entry at 5E93
-g$5E93 DEFB $7C
-
-; Game status buffer entry at 5E94
+; Sprite attribute row
 g$5E94 DEFB $F8
 
 ; Horace's current frame ID (0 or 1)
@@ -1270,7 +1244,9 @@ g$5EB6 DEFB $C7
 ; Game status buffer entry at 5EB7
 g$5EB7 DEFB $7F
 
-; Set to 1 if in demo mode
+; Demo mode flag
+;
+; If 0, game is not in demo mode. Otherwise, indicates next input in demo mode
 g$5EB8 DEFB $E0
 
 ; Set to 1 if the game is over
@@ -1306,7 +1282,7 @@ g$5EC2 DEFB $79
 ; Game status buffer entry at 5EC3
 g$5EC3 DEFB $71
 
-; Game status buffer entry at 5EC4
+; Tick count between changing movement in demo mode
 g$5EC4 DEFB $30
 
 ; Game status buffer entry at 5EC5
@@ -1315,14 +1291,16 @@ g$5EC5 DEFB $38
 ; Game status buffer entry at 5EC6
 g$5EC6 DEFB $48
 
-; Game status buffer entry at 5EC7
+; Copy of screen replaced by Horace's sprite (?)
 g$5EC7 DEFB $FC,$F0,$C4,$FC,$CC,$78,$40,$00
  $5ECF DEFB $00,$1F,$3F,$7F,$CE,$CE,$C6,$67
  $5ED7 DEFB $77,$F0,$FC,$FE,$3F,$1F,$1D,$19
  $5EDF DEFB $B9,$00,$00,$00,$00,$00,$00,$00
  $5EE7 DEFB $00,$4E,$7D,$6C,$CE,$9A,$86,$CC
  $5EEF DEFB $78,$3E,$E2,$FE,$FA,$EB,$23,$36
- $5EF7 DEFB $1C,$00,$00,$00,$00,$00
+
+; Copy of attributes replaced by Horace's sprite (?)
+b$5EF7 DEFB $1C,$00,$00,$00,$00,$00
 
 ; Game status buffer entry at 5EFD
 g$5EFD DEFB $00
@@ -1341,7 +1319,7 @@ g$5F00 DEFW $0000
 ; Sprite address
 g$5F02 DEFW $0000
 
-; Sprite attribute ID
+; Sprite attribute column
 g$5F04 DEFB $00
 
 ; Number of rows to draw
@@ -1360,7 +1338,7 @@ g$5F06 DEFB $00
 ; { 03 : ?? }
 ; { 04-05 : Screen position }
 ; { 06-07 : Pointer to sprite data }
-; { 08-09 : Pointer to movement data }
+; { 08-09 : Pointer to attribute data }
 ; { 0A : Height }
 ; { 0B : Width }
 ; { 0C : ??? }
@@ -1405,6 +1383,8 @@ u$5F86 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $5FE6 DEFB $83
 
 ; Data for ambulance at the bottom of the screen
+;
+; Format is the same as traffic data
 g$5FE7 DEFB $5F,$2B,$2D,$65,$33,$FF,$FF,$ED
  $5FEF DEFB $10,$0D,$00,$53,$00
 
@@ -1496,8 +1476,9 @@ b$6091 DEFB $46,$00,$C7,$04,$5D,$00,$8C,$03
  $60A9 DEFB $8B,$01,$BF,$00,$0F,$02,$88,$00
  $60B1 DEFB $C0,$02,$5E,$00
 
-; Data block at 60B5
-b$60B5 DEFB $84,$03,$43,$00
+; Sound effect data for Horace being run over
+b$60B5 DEFW $0384
+ $60B7 DEFW $0043
 
 ; Display text
 t$60B9 DEFM $12,$00,$11,$07,$10,$00,$16,$00,$00,"CASH $     SCORE        HI      "
@@ -1708,8 +1689,8 @@ b$6431 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $64F1 DEFB $FE,$0E,$32,$C2,$00,$07,$1F,$7F
  $64F9 DEFB $00,$00,$00,$00,$00,$C0,$F0,$F0
 
-; Data block at 6501
-b$6501 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+; Unused
+u$6501 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
 ; Truck R attributes
 b$6509 DEFB $00,$05,$05,$05,$05,$05,$05,$05
@@ -2113,7 +2094,7 @@ t$6B2E DEFM $12,$00,$11,$07,$10,$01,$16,$00,$09,"  PRESS ANY KEY TO PLAY"
 ; Empty space (used to clear other message)
 t$6B4E DEFM $12,$00,$11,$07,$10,$00,$16,$01,$04,"                        "
 
-; Data block at 6B6F
+; Default game values
 b$6B6F DEFB $00,$00,$00,$01,$01,$04,$06,$0A
  $6B77 DEFB $C3,$60,$5A,$01,$14
 
@@ -2308,9 +2289,9 @@ c$6CB9 LD DE,$FFE0   ; Set #REGde to move back one row
 c$6CDD LD A,($5EFD)  ;
  $6CE0 AND A         ;
  $6CE1 JR Z,$6D0C    ;
- $6CE3 LD A,($5E73)  ;
- $6CE6 AND A         ;
- $6CE7 JR Z,$6D0C    ;
+ $6CE3 LD A,($5E73)  ; Get the number of points to be awarded
+ $6CE6 AND A         ; Are there any?
+ $6CE7 JR Z,$6D0C    ; Skip all this if there are no points
  $6CE9 LD B,A        ;
  $6CEA ADD A,A       ;
  $6CEB ADD A,A       ;
@@ -2318,8 +2299,8 @@ c$6CDD LD A,($5EFD)  ;
  $6CED LD HL,$5CDA   ;
  $6CF0 ADD A,(HL)    ;
  $6CF1 LD (HL),A     ;
- $6CF2 XOR A         ;
- $6CF3 LD ($5E73),A  ;
+ $6CF2 XOR A         ; { Set no points to be awarded
+ $6CF3 LD ($5E73),A  ; }
  $6CF6 CALL $6D35    ;
  $6CF9 LD A,($5CD5)  ;
  $6CFC CP $30        ;
@@ -2413,7 +2394,7 @@ c$6D6B LD A,($5EFD)  ;
  $6D7F LD ($5EBF),A  ;
 *$6D82 ADD A,$30     ; {Convert this to ASCII and store it in the 'tens' digit
  $6D84 LD ($5CD3),A  ; }
- $6D87 LD HL,$5CD4   ; Point #REGhl at the end of the cash total (#R$5CD2)
+ $6D87 LD HL,$5CD4   ; Point #REGhl at the end of the cash total (#R$5CD0)
  $6D8A CALL $6D35    ; Convert this to a string
 *$6D8D LD HL,$5CD0   ; Point #REGhl at ??
  $6D90 CALL $6D53    ; Convert this to a string
@@ -2447,7 +2428,7 @@ c$6DAD PUSH HL       ; Store #REGhl
 ; Update the high score if required
 ;
 ; Used by the routine at #R$6D6B.
-c$6DBC LD HL,$5CD6   ; Point #REGhl at the current score (#R$5CD6)
+c$6DBC LD HL,$5CD6   ; Point #REGhl at the current score (#R$5CD5)
  $6DBF LD DE,$5CDB   ; Point #REGde at the high score (#R$5CDB)
  $6DC2 LD B,$05      ; 5 digits to check
 *$6DC4 LD A,(DE)     ; Get the next hi score digit
@@ -2565,8 +2546,8 @@ c$6E4A LD BC,$04F7   ;
  $6E4D LD DE,$5EB8   ; Point #REGde to the demo mode flag (#R$5EB8)
  $6E50 LD A,(DE)     ; {Is the game in demo mode?
  $6E51 AND A         ; }
- $6E52 JR Z,$6EAF    ; If so, skip over the control input
-; The game is not in demo mode, so read the direction controls
+ $6E52 JR Z,$6EAF    ; If not, skip over the control input
+; The game is in demo mode, so read the direction controls
  $6E54 BIT 0,A       ;
  $6E56 JR NZ,$6E60   ;
  $6E58 CP $02        ;
@@ -2588,16 +2569,16 @@ c$6E4A LD BC,$04F7   ;
 *$6E77 LD B,A        ;
  $6E78 LD ($5EC5),A  ;
  $6E7B JR $6E8B      ;
-*$6E7D CALL $6DAD    ;
+*$6E7D CALL $6DAD    ; Generate a random number
  $6E80 AND $03       ;
  $6E82 BIT 0,A       ;
  $6E84 JR Z,$6E9E    ;
  $6E86 LD B,A        ;
  $6E87 JR $6E8B      ;
 *$6E89 LD B,$02      ;
-*$6E8B LD HL,$5EC4   ;
- $6E8E DEC (HL)      ;
- $6E8F JR NZ,$6E9E   ;
+*$6E8B LD HL,$5EC4   ; {Decrement the tick count for this movement
+ $6E8E DEC (HL)      ; }
+ $6E8F JR NZ,$6E9E   ; Skip changing direction if the tick count is not zero
  $6E91 LD (HL),$5A   ;
  $6E93 LD A,(DE)     ;
  $6E94 INC A         ;
@@ -2616,6 +2597,7 @@ c$6E4A LD BC,$04F7   ;
  $6EAA INC A         ;
  $6EAB LD ($5EB9),A  ;
  $6EAE RET           ;
+; Handle keyboard input
 *$6EAF LD A,$FD      ; {Was 'S' pressed?
  $6EB1 IN A,($FE)    ;
  $6EB3 AND $02       ; }
@@ -2752,9 +2734,10 @@ c$6F40 XOR A         ; Set #REGa to zero to clear some flags
  $6FA8 DEC (HL)      ; }
  $6FA9 JR NZ,$6F77   ; Jump back to run another frame of the title screen if
                      ; there is time
- $6FAB LD HL,$5EB8   ;
- $6FAE INC (HL)      ;
-*$6FAF LD HL,$5CD5   ;
+; The intro screen has been on long enough, now enter demo mode
+ $6FAB LD HL,$5EB8   ; {Set the demo mode flag (#R$5EB8)
+ $6FAE INC (HL)      ; }
+*$6FAF LD HL,$5CD5   ; { Set the current and hi score to zero
  $6FB2 LD DE,$5CCF   ;
  $6FB5 LD A,$30      ;
  $6FB7 LD (HL),A     ;
@@ -2763,14 +2746,14 @@ c$6F40 XOR A         ; Set #REGa to zero to clear some flags
  $6FBB INC DE        ;
  $6FBC LD (HL),A     ;
  $6FBD LD (DE),A     ;
- $6FBE DJNZ $6FBA    ;
- $6FC0 LD A,$34      ;
- $6FC2 LD ($5CD3),A  ;
- $6FC5 LD HL,$6B6F   ;
+ $6FBE DJNZ $6FBA    ; }
+ $6FC0 LD A,$34      ; { Set cash to $40
+ $6FC2 LD ($5CD3),A  ; }
+ $6FC5 LD HL,$6B6F   ; { Copy the default values (score, cash) to the working buffer
  $6FC8 LD DE,$5EBA   ;
  $6FCB LD C,$0D      ;
- $6FCD LDIR          ;
- $6FCF RET           ;
+ $6FCD LDIR          ; }
+ $6FCF RET           ; All done
 
 ; Print a line of text on the intro screen
 ;
@@ -2942,7 +2925,7 @@ c$70AB XOR A         ;
  $70BF LD HL,$0400   ;
  $70C2 LD A,($5EB8)  ; {Is the game in demo mode?
  $70C5 AND A         ; }
- $70C6 JR Z,$70CB    ;
+ $70C6 JR Z,$70CB    ; Jump forward if it isn't
  $70C8 LD HL,$0B00   ; {Set to pause for #N$B00 ticks
 *$70CB LD ($5E97),HL ; }
  $70CE CALL $6BC0    ; Initialize display
@@ -3640,7 +3623,7 @@ c$74A2 PUSH HL       ; Store #REGhl
 c$74E3 LD A,($5E8D)  ; {Has Horace hit a vehicle?
  $74E6 AND A         ; }
  $74E7 JR NZ,$752E   ; Jump forward if so
- $74E9 LD ($5E73),A  ;
+ $74E9 LD ($5E73),A  ; Allocate points while Horace is on the road
  $74EC LD A,($5EBC)  ;
  $74EF AND A         ;
  $74F0 CALL Z,$7532  ;
@@ -3658,9 +3641,9 @@ c$74E3 LD A,($5E8D)  ; {Has Horace hit a vehicle?
  $7506 LD A,$03      ; {Reset it back to 3
  $7508 LD (HL),A     ; }
  $7509 CALL $75B5    ; Update based on the keyboard input
- $750C LD A,($5E73)  ;
- $750F AND A         ;
- $7510 JR Z,$7529    ;
+ $750C LD A,($5E73)  ; Get points to be awarded
+ $750F AND A         ; Are there any?
+ $7510 JR Z,$7529    ; Skip this if there are none
  $7512 LD HL,($5F00) ;
  $7515 LD DE,$40BF   ;
  $7518 EX DE,HL      ;
@@ -3671,7 +3654,7 @@ c$74E3 LD A,($5E8D)  ; {Has Horace hit a vehicle?
  $7521 AND A         ;
  $7522 SBC HL,DE     ;
  $7524 JR NC,$7529   ;
-*$7526 LD ($5E73),A  ;
+*$7526 LD ($5E73),A  ; Set points to be awarded
 *$7529 LD A,($5E8D)  ; {Has Horace hit a vehicle?
  $752C AND A         ; }
  $752D RET Z         ; Return if not
@@ -3699,19 +3682,19 @@ c$7532 LD HL,($5F00) ; Put the current position in #REGhl.
  $7555 CALL $6E25    ;
  $7558 RET           ;
 
-; Routine at 7559
+; Set up temporary buffers used while drawing Horace
 ;
 ; Used by the routine at #R$74E3.
-c$7559 LD HL,$5EB8   ;
- $755C LD A,(HL)     ;
- $755D AND A         ;
- $755E JR Z,$7579    ;
+c$7559 LD HL,$5EB8   ; Get the demo mode flag (#R$5EB8)
+ $755C LD A,(HL)     ; {Is the game in demo mode?
+ $755D AND A         ; }
+ $755E JR Z,$7579    ; Skip this if it isn't
  $7560 BIT 0,A       ;
  $7562 JR NZ,$7579   ;
  $7564 INC A         ;
  $7565 LD (HL),A     ;
- $7566 LD HL,$5EC4   ;
- $7569 LD (HL),$5A   ;
+ $7566 LD HL,$5EC4   ; {Set the tick count between movement to #N$5A
+ $7569 LD (HL),$5A   ; }
  $756B LD HL,$5EBC   ;
  $756E LD (HL),$FF   ;
  $7570 CP $05        ;
@@ -3727,19 +3710,19 @@ c$7559 LD HL,$5EB8   ;
 *$7585 LD DE,$5EFD   ; {Copy the default data into the graphics buffer entries
  $7588 LD BC,$000A   ;
  $758B LDIR          ; }
- $758D LD HL,($5F00) ;
- $7590 LD ($5E89),HL ;
- $7593 LD ($5E8B),HL ;
- $7596 LD HL,$5EC7   ;
+ $758D LD HL,($5F00) ; Get the current screen address
+ $7590 LD ($5E89),HL ; {Set this as the addresses to use elsewhere
+ $7593 LD ($5E8B),HL ; }
+ $7596 LD HL,$5EC7   ; { Clear the temporary storage
  $7599 LD DE,$5EC8   ;
  $759C LD BC,$002F   ;
  $759F LD (HL),$00   ;
- $75A1 LDIR          ;
- $75A3 INC HL        ;
+ $75A1 LDIR          ; }
+ $75A3 INC HL        ; { Set the temporary attributes to black INK on white PAPER
  $75A4 INC DE        ;
  $75A5 LD C,$05      ;
  $75A7 LD (HL),$38   ;
- $75A9 LDIR          ;
+ $75A9 LDIR          ; }
  $75AB AND A         ;
  $75AC RET NZ        ;
  $75AD LD C,$04      ;
@@ -4236,15 +4219,15 @@ c$78B4 CALL $7904    ; Fill the screen with colours
  $7901 JR NZ,$78D6   ;
  $7903 RET           ;
 
-; Routine at 7904
+; Fill the screen with colours (skiing screen intro)
 ;
 ; Used by the routine at #R$78B4.
-c$7904 LD HL,$5EB8   ;
+c$7904 LD HL,$5EB8   ; Point #REGhl at the demo mode flag (#R$5Eb8)
  $7907 CP (HL)       ;
  $7908 JR Z,$7911    ;
  $790A LD (HL),$05   ;
- $790C LD A,$FF      ;
- $790E LD ($5EC4),A  ;
+ $790C LD A,$FF      ; {Set the tick count between movement to #N$FF
+ $790E LD ($5EC4),A  ; }
 *$7911 LD HL,$0FA0   ;
  $7914 LD ($5EB0),HL ;
  $7917 LD ($5E99),HL ;
@@ -4259,12 +4242,12 @@ c$7904 LD HL,$5EB8   ;
 ; Initialize skiing screen
 ;
 ; Used by the routines at #R$78B4 and #R$7C74.
-c$792A CALL $6BC0    ;
- $792D XOR A         ;
+c$792A CALL $6BC0    ; Initialise display
+ $792D XOR A         ; Set #REGa to 0 for some flags
  $792E LD ($5EA9),A  ;
  $7931 LD ($5EAB),A  ;
- $7934 INC A         ;
- $7935 LD ($5EA8),A  ;
+ $7934 INC A         ; Set #REGa to 1 for some flags
+ $7935 LD ($5EA8),A  ; 
  $7938 LD ($5EA7),A  ;
  $793B LD A,$16      ;
  $793D LD ($5EAE),A  ;
@@ -4615,7 +4598,7 @@ c$7ABA EXX           ;
  $7B6B SRA A         ;
  $7B6D ADD A,$58     ;
  $7B6F LD H,A        ; }
- $7B70 LD DE,($5E7F) ; Point #REGde at the movement table
+ $7B70 LD DE,($5E7F) ; Point #REGde at the attribute table
  $7B74 LD A,($5E75)  ;
  $7B77 EX AF,AF'     ;
 *$7B78 PUSH DE       ;
@@ -4892,10 +4875,10 @@ c$7CFA LD A,($5E8D)  ; Get Horace's state
  $7D21 JR Z,$7D30    ;
  $7D23 LD HL,$5E8D   ;
  $7D26 LD (HL),E     ;
- $7D27 LD A,($5E73)  ;
+ $7D27 LD A,($5E73)  ; {Missed a flag, deduct points and return
  $7D2A SUB $06       ;
- $7D2C LD ($5E73),A  ;
- $7D2F RET           ;
+ $7D2C LD ($5E73),A  ; 
+ $7D2F RET           ; }
 *$7D30 LD HL,($5EB2) ;
  $7D33 LD D,$3C      ;
  $7D35 LD A,$03      ;
@@ -5173,11 +5156,7 @@ c$7EF6 LD HL,($5EB2) ;
  $7F00 INC HL        ;
  $7F01 DJNZ $7EFB    ;
  $7F03 RET           ;
-
-; Routine at 7F04
-;
-; Used by the routine at #R$7EF6.
-c$7F04 LD A,($5EAF)  ;
+*$7F04 LD A,($5EAF)  ;
  $7F07 AND A         ;
  $7F08 RET NZ        ;
  $7F09 LD A,$07      ;
